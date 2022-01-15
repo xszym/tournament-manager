@@ -94,3 +94,4 @@ Wynik
 - `docker-compose exec web python manage.py createsuperuser`
 - `docker-compose exec web python manage.py makemigrations`
 - `docker-compose exec web python manage.py migrate`
+- `docker-compose up --build`

@@ -9,49 +9,11 @@ from .forms import LoginForm, RegisterForm
 
 
 def welcome(request ):
+    return render(request, 'tournament/home.html')
     if(request.user.is_authenticated):
         return HttpResponse("Hi " + request.user.username)
     else:
         return HttpResponse("Please login or register!")
-
-
-def appLogin(request):
-    if request.method == 'POST':
-        form = LoginForm(request.POST)
-        if form.is_valid():
-            username = request.POST['login']
-            password = request.POST['password']
-            user = authenticate(request, username=username, password=password)
-            if user is not None:
-                login(request, user)
-                messages.success(request, "Zalogowano pomyslnie")
-            else:
-                messages.warning(request, "Wprowadzono bledne dane")
-    if request.user.is_authenticated:
-        return render(request, 'tournament/loginApp.html')
-    else:
-        form = LoginForm()
-        return render(request, 'tournament/loginApp.html', {'form': form})
-
-def appReg(request):
-    if request.method == "POST":
-        form = LoginForm(request.POST)
-        if form.is_valid():
-            username = request.POST["login"]
-            email = request.POST["email"]
-            password = request.POST["password"]
-            user, created = User.objects.get_or_create(username=username, email=email)
-            if(created):
-                user.set_password(password)
-                user.save()
-                return redirect('login')
-            else:
-                messages.warning(request, 'Uzytkownik istnieje w bazie')
-    if not request.user.is_authenticated:
-        form = RegisterForm()
-        return render(request, 'tournament/registerApp.html', {'form':form})
-    else:
-        return redirect('login/')
 
 
 def app_login(request: HttpRequest) -> HttpResponse:
