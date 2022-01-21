@@ -1,19 +1,22 @@
 version: "3.9"
-   
+
 services:
   database:
-    image: postgres:alpine3.15
+    image: postgres:14.1
     volumes:
       - ./data/database:/var/lib/postgresql/data
     env_file:
       - .env.dev
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
   web:
     build: .
     command: python manage.py runserver 0.0.0.0:8000
-    volumes:
-      - .:/code
     ports:
-      - "8000:8000"
+      - 8000:8000
     env_file:
       - .env.dev
     depends_on:
