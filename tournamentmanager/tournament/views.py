@@ -4,11 +4,18 @@ from django.contrib.auth import forms as auth_forms
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 from django.http.request import HttpRequest
+from django.views.generic import TemplateView
+
+from .models import Tournament
 
 
-@login_required
-def welcome(request):
-    return render(request, 'tournament/home.html')
+class IndexView(TemplateView):
+    template_name = 'tournament/home.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(IndexView, self).get_context_data(**kwargs)
+        context['last_tournaments'] = Tournament.objects.order_by('-created')[:5]
+        return context
 
 
 def app_register(request: HttpRequest) -> HttpResponse:
