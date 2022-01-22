@@ -8,6 +8,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 from django.http.request import HttpRequest
 from django.views.generic import TemplateView
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 from .forms import CreateTournamentForms
 from .models import Tournament
@@ -33,7 +34,7 @@ class RegisterView(FormView):
         return redirect('/login')
 
 
-class CreateTournamentView(CreateView):
+class CreateTournamentView(LoginRequiredMixin, CreateView):
     template_name_suffix = '_create_form'
     model = Tournament
     form_class = CreateTournamentForms
