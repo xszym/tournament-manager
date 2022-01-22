@@ -1,0 +1,13 @@
+{% extends 'tournament/base.html' %}
+
+{% load bootstrap5 %}
+
+{% block content %}
+<form role="form" class="col-lg-6 offset-lg-3" method="post">
+    <div class="justify-content-center">
+    {% csrf_token %}
+    {% bootstrap_form form %}
+    {% buttons submit='OK' reset="Cancel" %}{% endbuttons %}
+    </div>
+</form>
+{% endblock %}

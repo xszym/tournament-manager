@@ -1,0 +1,24 @@
+{% extends 'tournament/base.html' %}
+
+{% load bootstrap5 %}
+
+{% block content %}
+{% if not request.user.is_authenticated %}
+
+<form role="form" class="col-lg-6 offset-lg-3" method="post">
+    <div class="justify-content-center">
+    {% csrf_token %}
+    {% bootstrap_form form %}
+    {% buttons submit='OK' reset="Cancel" %}{% endbuttons %}
+    </div>
+</form>
+<div class="mr-auto"> Not a user? </div>
+<a class="btn btn-primary" href="{% url 'register' %}" role="button"> Register now </a>
+
+{% else %}
+
+<div class="mr-auto"> Hi {{ user.get_username }}, you are already logged in. </div>
+<a class="btn btn-outline-warning" href="{% url 'logout' %}" role="button"> Log out </a>
+
+{% endif %}
+{% endblock %}

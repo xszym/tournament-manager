@@ -1,5 +1,7 @@
 from django import forms
 
+from .models import Tournament
+
 
 class LoginForm(forms.Form):
     loginClass = forms.TextInput(attrs={'class': 'form-control'})
@@ -19,3 +21,21 @@ class RegisterForm(forms.Form):
     email = forms.EmailField(widget=emailClass, label='Email', required=True)
     password = forms.CharField(
         widget=passwordClass, label='Password', max_length=50, required=True)
+
+
+class DateInput(forms.DateInput):
+    input_type = 'date'
+
+
+class TimeInput(forms.TimeInput):
+    input_type = 'time'
+
+
+class CreateTournamentForms(forms.ModelForm):
+    class Meta:
+        model = Tournament
+        fields = ['name', 'location', 'start_date', 'end_date', 'type_of_elimination', 'game']
+        widgets = {
+            'start_date': DateInput(attrs={'class': 'form-control'}),
+            'end_date': DateInput(attrs={'class': 'form-control'}),
+        }
