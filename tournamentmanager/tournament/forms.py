@@ -34,8 +34,7 @@ class TimeInput(forms.TimeInput):
 class CreateTournamentForms(forms.ModelForm):
     class Meta:
         model = Tournament
-        fields = ['name', 'location', 'start_date',
-                  'end_date', 'match_time', 'type_of_elimination', ]
+        fields = ['name', 'location', 'start_date', 'end_date', 'match_time', 'type_of_elimination', 'game']
         widgets = {
             'start_date': DateInput(attrs={'class': 'form-control'}),
             'end_date': DateInput(attrs={'class': 'form-control'}),
