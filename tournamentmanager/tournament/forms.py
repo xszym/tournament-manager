@@ -38,5 +38,4 @@ class CreateTournamentForms(forms.ModelForm):
         widgets = {
             'start_date': DateInput(attrs={'class': 'form-control'}),
             'end_date': DateInput(attrs={'class': 'form-control'}),
-            'match_time': TimeInput(attrs={'class': 'form-control'}),
         }
