@@ -39,7 +39,6 @@ class Tournament(models.Model):
     location = models.CharField(max_length=50, blank=True)
     start_date = models.DateField()
     end_date = models.DateField()
-    match_time = models.TimeField(default=datetime.time(minute=1))
     team_list = models.ManyToManyField(Team, blank=True)
     type_of_elimination = models.CharField(max_length=50, choices=EliminationType.choices())
     created = models.DateTimeField(auto_now_add=True)
