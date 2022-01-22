@@ -9,10 +9,12 @@ Login
 {% block content %}
 {% if not request.user.is_authenticated %}
 
-<form role="form" method="post">
+<form role="form" class="col-lg-6 offset-lg-3" method="post">
+    <div class="justify-content-center">
     {% csrf_token %}
     {% bootstrap_form form %}
     {% buttons submit='OK' reset="Cancel" %}{% endbuttons %}
+    </div>
 </form>
 <div class="mr-auto"> Nie jesteś użytkownikiem? </div>
 <a class="btn btn-primary" href="{% url 'register' %}" role="button"> Zarejestruj się </a>
