@@ -1,29 +1,15 @@
-{% load static %}
+{% extends 'tournament/bootstrap.html' %}
+
 {% load bootstrap5 %}
-<html lang="pl">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <!-- Bootstrap CSS -->
-    {% bootstrap_css %}
-    <link rel="stylesheet" type="text/css" href="{% static 'styles/main.css' %}">
-</head>
-<body>
-    <div role="main" class="container">
-        {% if messages %}
-        <div class="row">
-            <div class="col">
-                {% for message in messages %}
-                    <div class="alert alert-{{ message.tags }}" role="alert">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            </div>
-        </div>
-        {% endif %}
-        {% block content %}
-        {% endblock %}
-    </div>
-    {% bootstrap_javascript %}
-</body>
-</html>
+
+{% block bootstrap5_content %}
+<div class="container">
+    <h1 class="text-center">{% block title %}(no title){% endblock %}</h1>
+    <hr>
+
+    {% autoescape off %}{% bootstrap_messages %}{% endautoescape %}
+
+    {% block content %}(no content){% endblock %}
+</div>
+
+{% endblock %}
