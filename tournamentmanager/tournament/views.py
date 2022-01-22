@@ -1,12 +1,15 @@
 from django.http import HttpResponse
 from django.contrib import messages
 from django.contrib.auth import forms as auth_forms
+from django.urls import reverse
 from django.views.generic import FormView
+from django.views.generic import CreateView
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 from django.http.request import HttpRequest
 from django.views.generic import TemplateView
 
+from .forms import CreateTournamentForms
 from .models import Tournament
 
 
@@ -28,3 +31,13 @@ class RegisterView(FormView):
         form.save()
         messages.success(self.request, 'Poprawnie utworzono użytkownika')
         return redirect('/login')
+
+
+class CreateTournamentView(CreateView):
+    template_name_suffix = '_create_form'
+    model = Tournament
+    form_class = CreateTournamentForms
+
+    def get_success_url(self):
+        # return reverse('tournament-detail', kwargs={'pk': self.object.pk})
+        return reverse('home')
