@@ -64,7 +64,6 @@ class TournamentListView(ListView):
         name_val = self.request.GET.get('name', '')
         if name_val != '':
             tournaments_list = tournaments_list.filter(name__icontains=name_val)
-        print(tournaments_list)
         page = self.request.GET.get('page')
 
         paginator = Paginator(tournaments_list, self.paginate_by)
