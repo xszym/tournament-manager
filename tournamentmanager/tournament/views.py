@@ -51,7 +51,7 @@ class TournamentListView(ListView):
 
     def get_context_data(self, **kwargs):
         context = super(TournamentListView, self).get_context_data(**kwargs)
-        
+
         categories = Game.objects.all()
         context['games'] = categories
 
@@ -59,11 +59,11 @@ class TournamentListView(ListView):
 
         game_val = self.request.GET.get('game', '')
         if game_val != '':
-            tournaments_list = tournaments_list.filter(game__name=game_val)          
-        
+            tournaments_list = tournaments_list.filter(game__name=game_val)
+
         name_val = self.request.GET.get('name', '')
         if name_val != '':
-            tournaments_list = tournaments_list.filter(name__icontains=name_val) 
+            tournaments_list = tournaments_list.filter(name__icontains=name_val)
         print(tournaments_list)
         page = self.request.GET.get('page')
 
@@ -83,11 +83,11 @@ class TournamentListView(ListView):
 
         new_context = Tournament.objects.order_by('-created')
         if game_val != '':
-            new_context = new_context.filter(game__name=game_val)   
+            new_context = new_context.filter(game__name=game_val)
 
         if name_val != '':
-            new_context = new_context.filter(name__icontains=name_val) 
-        
+            new_context = new_context.filter(name__icontains=name_val)
+
         return new_context
 
     def get_kwargs(self, arg_name):
