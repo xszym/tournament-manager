@@ -47,7 +47,7 @@ class CreateTournamentView(LoginRequiredMixin, CreateView):
 
 class TournamentListView(ListView):
     template_name = 'tournament/tournament_list.html'
-    paginate_by = 2
+    paginate_by = 5
 
     def get_context_data(self, **kwargs):
         context = super(TournamentListView, self).get_context_data(**kwargs)
@@ -56,14 +56,18 @@ class TournamentListView(ListView):
         context['games'] = categories
 
         tournaments_list = Tournament.objects.all()
-        paginator = Paginator(tournaments_list, self.paginate_by)
 
         game_val = self.request.GET.get('game', '')
         if game_val != '':
-            new_context = tournaments_list.filter(game__name=game_val)            
-
-
+            tournaments_list = tournaments_list.filter(game__name=game_val)          
+        
+        name_val = self.request.GET.get('name', '')
+        if name_val != '':
+            tournaments_list = tournaments_list.filter(name__icontains=name_val) 
+        print(tournaments_list)
         page = self.request.GET.get('page')
+
+        paginator = Paginator(tournaments_list, self.paginate_by)
         try:
             tournaments_list = paginator.page(page)
         except PageNotAnInteger:
@@ -78,10 +82,12 @@ class TournamentListView(ListView):
         game_val = self.request.GET.get('game', '')
 
         new_context = Tournament.objects.order_by('-created')
-        
         if game_val != '':
-            new_context = new_context.filter(game__name=game_val)            
+            new_context = new_context.filter(game__name=game_val)   
 
+        if name_val != '':
+            new_context = new_context.filter(name__icontains=name_val) 
+        
         return new_context
 
     def get_kwargs(self, arg_name):
