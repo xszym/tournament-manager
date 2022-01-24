@@ -1,0 +1,67 @@
+{% extends "tournament/base.html" %}
+
+{% block title %}Tournament List{% endblock %}
+
+{% load static %}
+
+{% block content %}
+<h1 class="text-center m-2 mb-4 display-5">Your teams</h1>
+
+<div class="accordion" id="accordionPanelsStayOpenExample">
+  <div class="accordion-item">
+    <h2 class="accordion-header" id="panelsStayOpen-headingOne">
+      <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseOne" aria-expanded="true" aria-controls="panelsStayOpen-collapseOne">
+        Teams that you manage:
+      </button>
+    </h2>
+    <div id="panelsStayOpen-collapseOne" class="accordion-collapse collapse show" aria-labelledby="panelsStayOpen-headingOne">
+      <div class="accordion-body">
+        <div class="list-group">
+          {% for team in teams_manager %}
+          <a href="#" class="list-group-item list-group-item-action list-group-item-secondary d-flex justify-content-between align-items-center">
+            {{team.name}}
+            {% if team.members.count == 0 %}
+            <span class="badge bg-secondary rounded-pill">No team members</span>
+            {% elif team.members.count == 1 %}
+            <span class="badge bg-primary rounded-pill">1 team member</span>
+            {% else %}
+            <span class="badge bg-primary rounded-pill">{{team.members.count}} team members</span>
+            {% endif %}
+          </a>
+          {% empty %}
+          <div class="alert alert-light" role="alert">Not found</div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="accordion-item">
+    <h2 class="accordion-header" id="panelsStayOpen-headingTwo">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseTwo" aria-expanded="false" aria-controls="panelsStayOpen-collapseTwo">
+        Teams you are a member of:
+      </button>
+    </h2>
+    <div id="panelsStayOpen-collapseTwo" class="accordion-collapse collapse" aria-labelledby="panelsStayOpen-headingTwo">
+      <div class="accordion-body">
+        <div class="list-group">
+          {% for team in teams_member %}
+          <a href="#" class="list-group-item list-group-item-action list-group-item-secondary d-flex justify-content-between align-items-center">
+            {{team.name}}
+            {% if team.members.count == 0 %}
+            <span class="badge bg-secondary rounded-pill">No team members</span>
+            {% elif team.members.count == 1 %}
+            <span class="badge bg-primary rounded-pill">1 team member</span>
+            {% else %}
+            <span class="badge bg-primary rounded-pill">{{team.members.count}} team members</span>
+            {% endif %}
+          </a>
+          {% empty %}
+          <div class="alert alert-light m-0" role="alert">Not found</div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock content %}
