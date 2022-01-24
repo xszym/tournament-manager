@@ -17,7 +17,7 @@ class Team(models.Model):
     name = models.CharField(unique=True, max_length=50)
     team_manager = models.ForeignKey(User, on_delete=models.CASCADE, related_name='team_manager')
     members = models.ManyToManyField(User, related_name='members', blank=True)
-    
+
     def __str__(self):
         return '%s' % (self.name)
 
@@ -42,7 +42,7 @@ class Tournament(models.Model):
     type_of_elimination = models.CharField(max_length=50, choices=EliminationType.choices())
     created = models.DateTimeField(auto_now_add=True)
     referee_list = models.ManyToManyField(User, related_name='referee_list', blank=True)
-    
+
     def __str__(self):
         return '%s %s' % (self.start_date, self.name)
 
