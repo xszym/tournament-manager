@@ -51,16 +51,16 @@
           <li class="nav-item">
             <a class="nav-link" href="{% url 'register' %}">Register</a>
           {% endif %}
-          </li>
-        </ul>
-      </div>
+        </li>
+      </ul>
     </div>
-  </nav>
+  </div>
+</nav>
 
 <div class="container">
-    {% autoescape off %}{% bootstrap_messages %}{% endautoescape %}
+  {% autoescape off %}{% bootstrap_messages %}{% endautoescape %}
 
-    {% block content %}(no content){% endblock %}
+  {% block content %}(no content){% endblock %}
 </div>
 
 {% endblock %}
