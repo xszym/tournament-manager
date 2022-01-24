@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import Tournament
+from .models import Team, Tournament
 
 
 class LoginForm(forms.Form):
@@ -39,3 +39,8 @@ class CreateTournamentForms(forms.ModelForm):
             'start_date': DateInput(attrs={'class': 'form-control'}),
             'end_date': DateInput(attrs={'class': 'form-control'}),
         }
+
+class CreateTeamForm(forms.ModelForm):
+    class Meta:
+        model = Team
+        fields = ['name']
