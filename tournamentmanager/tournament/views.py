@@ -11,8 +11,8 @@ from django.core.paginator import Paginator
 from django.core.paginator import EmptyPage
 from django.core.paginator import PageNotAnInteger
 
-from .forms import CreateTournamentForms
-from .models import Game, Tournament
+from .forms import CreateTeamForm, CreateTournamentForms
+from .models import Game, Team, Tournament
 
 
 class IndexView(TemplateView):
@@ -42,6 +42,19 @@ class CreateTournamentView(LoginRequiredMixin, CreateView):
 
     def get_success_url(self):
         # return reverse('tournament-detail', kwargs={'pk': self.object.pk})
+        return reverse('home')
+
+class CreateTeamView(LoginRequiredMixin, CreateView):
+    template_name_suffix = '_create_form'
+    model = Team
+    form_class = CreateTeamForm
+
+    def form_valid(self, form):
+        form.instance.team_manager = self.request.user
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        # return reverse('team-management', kwargs={'pk': self.object.pk})
         return reverse('home')
 
 
