@@ -46,6 +46,7 @@ class Tournament(models.Model):
     def __str__(self):
         return '%s %s' % (self.start_date, self.name)
 
+
 class Score(models.Model):
     value = models.FloatField(default=0)
     is_acceptted = models.BooleanField(default=False)
