@@ -108,3 +108,21 @@ class TournamentListView(ListView):
             return arg
         except:
             return ''
+
+class TeamListView(LoginRequiredMixin, ListView):
+    template_name = 'tournament/team_list.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        teams_list = Team.objects.all()
+
+        teams_list_manager = teams_list.filter(team_manager=self.request.user)
+        teams_list_member = teams_list.filter(members__in=(self.request.user,))
+
+        context['teams_manager'] = teams_list_manager
+        context['teams_member'] = teams_list_member
+        return context
+
+    def get_queryset(self):
+        return Team.objects.all()
