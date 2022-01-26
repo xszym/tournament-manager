@@ -40,6 +40,11 @@ class CreateTournamentView(LoginRequiredMixin, CreateView):
     model = Tournament
     form_class = CreateTournamentForms
 
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        self.object.referee_list.add(self.request.user)
+        return response
+
     def get_success_url(self):
         # return reverse('tournament-detail', kwargs={'pk': self.object.pk})
         return reverse('home')
@@ -51,7 +56,8 @@ class CreateTeamView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.team_manager = self.request.user
-        return super().form_valid(form)
+        response = super().form_valid(form)
+        return response
 
     def get_success_url(self):
         # return reverse('team-management', kwargs={'pk': self.object.pk})
