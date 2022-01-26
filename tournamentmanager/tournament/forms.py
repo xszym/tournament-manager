@@ -56,7 +56,7 @@ class TeamTournamentRequestForm(forms.ModelForm):
         super(TeamTournamentRequestForm, self).__init__(**kwargs)
         print(user)
         # print(self.request.user)
-        self.team = Team.objects.filter(team_manager=user)
+        self.team = Team.objects.filter(team_manager=1)
 
     def get_form_kwargs(self):
         kwargs = super(TeamTournamentRequestForm, self).get_form_kwargs()
