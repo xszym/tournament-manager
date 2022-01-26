@@ -1,11 +1,13 @@
 import datetime
 from enum import Enum
+import uuid
 
 from django.contrib.auth.models import User
 from django.db import models
 
 
 class Game(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=50, unique=True)
     img_path = models.CharField('img_path', max_length=100, unique=False, default='tournament/images/base.jpeg')
 
@@ -14,6 +16,7 @@ class Game(models.Model):
 
 
 class Team(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(unique=True, max_length=50)
     team_manager = models.ForeignKey(User, on_delete=models.CASCADE, related_name='team_manager')
     members = models.ManyToManyField(User, related_name='members', blank=True)
@@ -32,6 +35,7 @@ class EliminationType(Enum):
 
 
 class Tournament(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=50)
     description = models.CharField(max_length=1000, blank=True, null=True, default="")
     game = models.ForeignKey(Game, on_delete=models.CASCADE)
@@ -48,11 +52,13 @@ class Tournament(models.Model):
 
 
 class Score(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     value = models.FloatField(default=0)
     is_acceptted = models.BooleanField(default=False)
 
 
 class Match(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE)
     team_A = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='teamA')
     team_B = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='teamB')
