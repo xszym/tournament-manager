@@ -20,7 +20,7 @@ class IndexView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(IndexView, self).get_context_data(**kwargs)
-        context['last_tournaments'] = Tournament.objects.order_by('-created')[:5]
+        context['last_tournaments'] = Tournament.objects.order_by('-created')[:3]
         return context
 
 
