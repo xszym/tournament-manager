@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import Team, Tournament
+from .models import Team, Tournament, TeamTournamentRequest
 
 
 class LoginForm(forms.Form):
@@ -44,3 +44,21 @@ class CreateTeamForm(forms.ModelForm):
     class Meta:
         model = Team
         fields = ['name']
+
+
+class TeamTournamentRequestForm(forms.ModelForm):
+    class Meta:
+        model = TeamTournamentRequest
+        fields = ['tournament', 'team']
+
+    def __init__(self, user=None,  **kwargs):
+        user = kwargs.pop('user', None)
+        super(TeamTournamentRequestForm, self).__init__(**kwargs)
+        print(user)
+        # print(self.request.user)
+        self.team = Team.objects.filter(team_manager=user)
+
+    def get_form_kwargs(self):
+        kwargs = super(TeamTournamentRequestForm, self).get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs

@@ -11,8 +11,8 @@ from django.core.paginator import Paginator
 from django.core.paginator import EmptyPage
 from django.core.paginator import PageNotAnInteger
 
-from .forms import CreateTeamForm, CreateTournamentForms
-from .models import Game, Team, Tournament
+from .forms import CreateTeamForm, CreateTournamentForms, TeamTournamentRequestForm
+from .models import Game, Team, TeamTournamentRequestStatusType, Tournament, TeamTournamentRequest
 
 
 class IndexView(TemplateView):
@@ -48,6 +48,7 @@ class CreateTournamentView(LoginRequiredMixin, CreateView):
     def get_success_url(self):
         # return reverse('tournament-detail', kwargs={'pk': self.object.pk})
         return reverse('home')
+
 
 class CreateTeamView(LoginRequiredMixin, CreateView):
     template_name_suffix = '_create_form'
@@ -115,6 +116,7 @@ class TournamentListView(ListView):
         except:
             return ''
 
+
 class TeamListView(LoginRequiredMixin, ListView):
     template_name = 'tournament/team_list.html'
 
@@ -132,3 +134,20 @@ class TeamListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         return Team.objects.all()
+
+
+class CreateTeamTournamentRequestView(LoginRequiredMixin, CreateView):
+    template_name_suffix = '_create_form'
+    model = TeamTournamentRequest
+    form_class = TeamTournamentRequestForm
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        print(self.request.user)
+        self.object.status = TeamTournamentRequestStatusType.PENDING
+        return response
+
+
+    def get_success_url(self):
+        # return reverse('tournament-detail', kwargs={'pk': self.object.pk})
+        return reverse('home')
