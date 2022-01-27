@@ -143,11 +143,15 @@ class CreateTeamTournamentRequestView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         response = super().form_valid(form)
-        print(self.request.user)
+        # print(self.request.user)
         self.object.status = TeamTournamentRequestStatusType.PENDING
         return response
-
 
     def get_success_url(self):
         # return reverse('tournament-detail', kwargs={'pk': self.object.pk})
         return reverse('home')
+
+    def get_form_kwargs(self, **kwargs):
+        form_kwargs = super(CreateTeamTournamentRequestView, self).get_form_kwargs(**kwargs)
+        form_kwargs["user"] = self.request.user
+        return form_kwargs
