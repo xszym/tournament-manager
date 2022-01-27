@@ -49,28 +49,38 @@
   <div style="padding-top: 5vh; padding-left: 10px; padding-right: 10px">
     {% for tournament in tournaments %}
     <div class="row"
-      style="margin-top: 10px; width: 60%; min-width: 200px; min-height: 10px; background-color: white; margin-left: auto; margin-right: auto; border: 1px solid #707070;">
+      style="margin-top: 30px; max-width: 800px; min-width: 200px; min-height: 50px; background-color: white; margin-left: auto; margin-right: auto;">
       <div class="col-md-5" style="background-color: #3F3D56; padding-left: 0; padding-right: 0;">
         <img style="width: 100%; height: auto;" aria-label="tournament image" src="{% static tournament.game.img_path %}" />
       </div>
       <div class="col-md-7" style="padding: 20px ;">
         <div class="row" style="margin-top: 10px;">
-          <div class="col-sm-6">
+          <div class="col-sm-5">
             <div style="font-weight: 500;">
-              <a href="#">
-                <span class="title">
-                  Name: {{ tournament.name }}
-                </span>
-              </a>
+              Name: {{ tournament.name }}
             </div>
             <div>
               Game: {{ tournament.game.name }}
             </div>
           </div>
+          <div class="col-sm-1">
+          </div>
+          <div class="col-sm-3">
+            Start {{ tournament.start_date }}
+          </div>
+          <div class="col-sm-3">
+            End {{ tournament.end_date }}
+          </div>
         </div>
-
-        <div style="max-width: 500px; margin-top: 50px;">
-          {{ tournament.description }}
+        <div style="margin-top: 5px;">
+          <div class="row">
+            <div class="col-6">
+              {{ tournament.location }}
+            </div>
+            <div class="col-6" style="text-align: right;">
+              <button class="btn btn-primary">Check more info</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

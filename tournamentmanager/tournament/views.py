@@ -21,7 +21,7 @@ class IndexView(TemplateView):
 
     def get_context_data(self, **kwargs):
         context = super(IndexView, self).get_context_data(**kwargs)
-        context['last_tournaments'] = Tournament.objects.order_by('-created')[:5]
+        context['last_tournaments'] = Tournament.objects.order_by('-created')[:3]
         return context
 
 
@@ -68,7 +68,7 @@ class CreateTeamView(LoginRequiredMixin, CreateView):
 
 class TournamentListView(ListView):
     template_name = 'tournament/tournament_list.html'
-    paginate_by = 5
+    paginate_by = 3
 
     def get_context_data(self, **kwargs):
         context = super(TournamentListView, self).get_context_data(**kwargs)
