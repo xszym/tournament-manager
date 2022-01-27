@@ -165,11 +165,11 @@ class TournamentManageView(LoginRequiredMixin, ListView):
 
 
         tournaments = Tournament.objects.filter(referee_list=self.request.user)
-        request_list = TeamTournamentRequest.objects.all()
 
         context['tournaments'] = []
 
         for tournament in tournaments:
+            request_list = TeamTournamentRequest.objects.all()
             request_list = request_list.filter(tournament=tournament.pk)
             context['tournaments'].append([tournament, request_list])
 
@@ -184,6 +184,8 @@ def change_TeamTournamentRequest_status(request, request_id, new_status):
     # if request.tournament.
     try:
         request.status = TeamTournamentRequestStatusType(new_status).name
+        if request.status == TeamTournamentRequestStatusType.ACCEPTED.name:
+            request.tournament.team_list.add(request.team)
         request.save()
 
     except (KeyError, request.DoesNotExist):
