@@ -1,8 +1,8 @@
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, Http404, HttpResponse
 from django.contrib import messages
 from django.contrib.auth import forms as auth_forms
 from django.urls import reverse
-from django.views.generic import CreateView, ListView, FormView, TemplateView
+from django.views.generic import CreateView, ListView, FormView, TemplateView, DetailView
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 from django.http.request import HttpRequest
@@ -14,6 +14,7 @@ from django.shortcuts import get_object_or_404
 
 from .forms import CreateTeamForm, CreateTournamentForms, TeamTournamentRequestForm
 from .models import Game, Team, TeamTournamentRequestStatusType, Tournament, TeamTournamentRequest
+from .helpers import slug_to_uuid
 
 
 class IndexView(TemplateView):
@@ -192,3 +193,14 @@ def change_TeamTournamentRequest_status(request, request_id, new_status):
         # Redisplay the question voting form.
         return reverse('tournament_manage')
     return HttpResponseRedirect(reverse('tournament_manage'))
+
+  
+class TeamDetailsView(DetailView):
+    model = Team
+
+    def get_object(self, queryset = None):
+        try:
+            self.kwargs['pk'] = slug_to_uuid(self.kwargs.get('slug'))
+            return super().get_object(queryset)
+        except ValueError:
+            raise Http404('Invalid team id format')
