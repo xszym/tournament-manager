@@ -55,6 +55,11 @@ class Tournament(models.Model):
     created = models.DateTimeField(auto_now_add=True)
     referee_list = models.ManyToManyField(User, related_name='referee_list', blank=True)
 
+    @property
+    def url(self):
+        slug = uuid_to_slug(self.id)
+        return reverse('tournament_details', kwargs={'slug':slug})
+
     def __str__(self):
         return '%s %s' % (self.start_date, self.name)
 
