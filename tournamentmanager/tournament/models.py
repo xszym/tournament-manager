@@ -86,5 +86,8 @@ class TeamTournamentRequest(models.Model):
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
     status = models.CharField(max_length=50, choices=TeamTournamentRequestStatusType.choices(), default="PENDING")
 
+    class Meta:
+        unique_together = [("tournament", "team")]
+
     def __str__(self):
         return '%s - %s (%s)' % (self.tournament.name, self.team.name, self.status)
