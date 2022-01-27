@@ -1,0 +1,29 @@
+{% extends "tournament/base.html" %}
+
+{% block title %}Tournament App - Team details{% endblock %}
+
+{% load static %}
+
+{% block content %}
+<h1 class="text-center m-2 mb-4 display-5">{{object.name}}</h1>
+
+<div class="d-flex justify-content-center">
+    <ul class="list-group list-group w-50">
+        <li class="list-group-item active">
+          <div class="ms-2 me-auto">
+            <div class="fw-bold text-center">{{object.team_manager}}</div>
+            <div class="text-center"><span class="badge bg-light text-dark rounded-pill">Manager</span></div>
+          </div>
+        </li>
+    {% for member in object.members.all %}
+        <li class="list-group-item">
+            <div class="ms-2 me-auto">
+                <div class="fw-bold text-center">{{member}}</div>
+                <div class="text-center"><span class="badge bg-primary rounded-pill">Member</span></div>
+            </div>
+        </li>
+    {% endfor %}
+    </ul>
+</div>
+
+{% endblock content %}

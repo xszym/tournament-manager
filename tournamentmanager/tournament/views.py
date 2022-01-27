@@ -1,8 +1,8 @@
-from django.http import HttpResponse
+from django.http import Http404, HttpResponse
 from django.contrib import messages
 from django.contrib.auth import forms as auth_forms
 from django.urls import reverse
-from django.views.generic import CreateView, ListView, FormView, TemplateView
+from django.views.generic import CreateView, ListView, FormView, TemplateView, DetailView
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render
 from django.http.request import HttpRequest
@@ -11,6 +11,7 @@ from django.core.paginator import Paginator
 from django.core.paginator import EmptyPage
 from django.core.paginator import PageNotAnInteger
 
+from .helpers import slug_to_uuid
 from .forms import CreateTeamForm, CreateTournamentForms
 from .models import Game, Team, Tournament
 
@@ -132,3 +133,13 @@ class TeamListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         return Team.objects.all()
+
+class TeamDetailsView(DetailView):
+    model = Team
+
+    def get_object(self, queryset = None):
+        try:
+            self.kwargs['pk'] = slug_to_uuid(self.kwargs.get('slug'))
+            return super().get_object(queryset)
+        except ValueError:
+            raise Http404('Invalid team id format')

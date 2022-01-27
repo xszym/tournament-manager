@@ -4,6 +4,9 @@ import uuid
 
 from django.contrib.auth.models import User
 from django.db import models
+from django.urls import reverse
+
+from .helpers import uuid_to_slug
 
 
 class Game(models.Model):
@@ -20,6 +23,11 @@ class Team(models.Model):
     name = models.CharField(unique=True, max_length=50)
     team_manager = models.ForeignKey(User, on_delete=models.CASCADE, related_name='team_manager')
     members = models.ManyToManyField(User, related_name='members', blank=True)
+
+    @property
+    def url(self):
+        slug = uuid_to_slug(self.id)
+        return reverse('team_details', kwargs={'slug':slug})
 
     def __str__(self):
         return '%s' % (self.name)
