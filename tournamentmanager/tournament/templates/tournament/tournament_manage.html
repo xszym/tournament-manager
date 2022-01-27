@@ -20,18 +20,18 @@
       <div class="accordion-body">
         <div class="list-group">
           {% for request in request_list %}
-          <a class="list-group-item list-group-item-action list-group-item-secondary d-flex">
+          <div class="list-group-item list-group-item-action list-group-item-secondary d-flex">
             {{ request.team.name }} 
             {% if request.status == "PENDING" %}
-            <span onclick="window.location='{% url 'change_TeamTournamentRequest_status' request.id 'ACCEPTED' %}'" class="badge bg-success">ACCEPT</span>  
-            <span onclick="window.location='#reject'" class="badge bg-danger"> REJECT </span>
+            <a class="mx-1" href="{% url 'change_TeamTournamentRequest_status' request.id 'ACCEPTED' %}"><span class="badge bg-success">ACCEPT</span></a>
+            <a class="mx-1" href="{% url 'change_TeamTournamentRequest_status' request.id 'REJECTED' %}"><span class="badge bg-danger">REJECT</span></a>
             <span class="badge bg-warning rounded-pill ms-auto"> PENDING </span>
             {% elif request.status == "ACCEPTED" %}
               <span class="badge bg-success rounded-pill ms-auto">ACCEPTED</span>
             {% elif request.status == "REJECTED" %}
               <span class="badge bg-danger rounded-pill ms-auto">REJECTED</span>
             {% endif %}
-          </a>
+          </div>
           {% empty %}
           <div class="alert alert-light" role="alert">No requests</div>
           {% endfor %}
