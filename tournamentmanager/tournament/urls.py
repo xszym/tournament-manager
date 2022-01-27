@@ -13,4 +13,6 @@ urlpatterns = [
     path('create-team/' , views.CreateTeamView.as_view(), name='create_team'),
     path('teams/', views.TeamListView.as_view(), name='teams_list'),
     path('team-tournament-request/' , views.CreateTeamTournamentRequestView.as_view(), name='team_tournament_request'),
+    path('tournament-manage/' , views.TournamentManageView.as_view(), name='tournament_manage'),
+    path('change-team-request-status/<int:request_id>/<str:new_status>/', views.change_TeamTournamentRequest_status, name='change_TeamTournamentRequest_status'),
 ]

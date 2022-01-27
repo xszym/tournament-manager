@@ -1,0 +1,47 @@
+{% extends "tournament/base.html" %}
+
+{% block title %}Tournament Manage{% endblock %}
+
+{% load static %}
+
+{% block content %}
+<h1 class="text-center m-2 mb-4 display-5">Your tournaments</h1>
+
+<div class="accordion" id="accordionPanelsStayOpenExample">
+
+  {% for tournament, request_list in tournaments %}
+  <div class="accordion-item">
+    <h2 class="accordion-header" id="panelsStayOpen-headingOne">
+      <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseOne" aria-expanded="true" aria-controls="panelsStayOpen-collapseOne">
+        {{ tournament.name }}
+      </button>
+    </h2>
+    <div id="panelsStayOpen-collapseOne" class="accordion-collapse collapse show" aria-labelledby="panelsStayOpen-headingOne">
+      <div class="accordion-body">
+        <div class="list-group">
+          {% for request in request_list %}
+          <a class="list-group-item list-group-item-action list-group-item-secondary d-flex">
+            {{ request.team.name }} 
+            {% if request.status == "PENDING" %}
+            <span onclick="window.location='{% url 'change_TeamTournamentRequest_status' request.id 'ACCEPTED' %}'" class="badge bg-success">ACCEPT</span>  
+            <span onclick="window.location='#reject'" class="badge bg-danger"> REJECT </span>
+            <span class="badge bg-warning rounded-pill ms-auto"> PENDING </span>
+            {% elif request.status == "ACCEPTED" %}
+              <span class="badge bg-success rounded-pill ms-auto">ACCEPTED</span>
+            {% elif request.status == "REJECTED" %}
+              <span class="badge bg-danger rounded-pill ms-auto">REJECTED</span>
+            {% endif %}
+          </a>
+          {% empty %}
+          <div class="alert alert-light" role="alert">No requests</div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+
+
+</div>
+
+{% endblock content %}

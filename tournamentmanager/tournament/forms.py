@@ -55,4 +55,3 @@ class TeamTournamentRequestForm(forms.ModelForm):
         user = kwargs.pop('user', None)
         super(TeamTournamentRequestForm, self).__init__(**kwargs)
         self.fields['team'].queryset = Team.objects.filter(team_manager=user.pk)
-

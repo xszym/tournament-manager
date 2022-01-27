@@ -1,4 +1,4 @@
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from django.contrib import messages
 from django.contrib.auth import forms as auth_forms
 from django.urls import reverse
@@ -10,6 +10,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator
 from django.core.paginator import EmptyPage
 from django.core.paginator import PageNotAnInteger
+from django.shortcuts import get_object_or_404
 
 from .forms import CreateTeamForm, CreateTournamentForms, TeamTournamentRequestForm
 from .models import Game, Team, TeamTournamentRequestStatusType, Tournament, TeamTournamentRequest
@@ -155,3 +156,37 @@ class CreateTeamTournamentRequestView(LoginRequiredMixin, CreateView):
         form_kwargs = super(CreateTeamTournamentRequestView, self).get_form_kwargs(**kwargs)
         form_kwargs["user"] = self.request.user
         return form_kwargs
+
+class TournamentManageView(LoginRequiredMixin, ListView):
+    template_name = 'tournament/tournament_manage.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+
+        tournaments = Tournament.objects.filter(referee_list=self.request.user)
+        request_list = TeamTournamentRequest.objects.all()
+
+        context['tournaments'] = []
+
+        for tournament in tournaments:
+            request_list = request_list.filter(tournament=tournament.pk)
+            context['tournaments'].append([tournament, request_list])
+
+        return context
+
+    def get_queryset(self):
+        return Team.objects.all()
+
+def change_TeamTournamentRequest_status(request, request_id, new_status):
+    request = get_object_or_404(TeamTournamentRequest, pk=request_id)
+    print("change_TeamTournamentRequest_status", request)
+    # if request.tournament.
+    try:
+        request.status = TeamTournamentRequestStatusType(new_status).name
+        request.save()
+
+    except (KeyError, request.DoesNotExist):
+        # Redisplay the question voting form.
+        return reverse('tournament_manage')
+    return HttpResponseRedirect(reverse('tournament_manage'))
