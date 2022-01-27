@@ -77,3 +77,25 @@ class Match(models.Model):
 
     def __str__(self):
         return '%s (%d) vs %s (%d)' % (self.team_A.name, self.team_A_score.value, self.team_B.name, self.team_B_score.value)
+
+
+class TeamTournamentRequestStatusType(Enum):
+    PENDING = "PENDING"
+    ACCEPTED = "ACCEPTED"
+    REJECTED = "REJECTED"
+
+    @classmethod
+    def choices(cls):
+        return tuple((i.name, i.value) for i in cls)
+
+
+class TeamTournamentRequest(models.Model):
+    tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE)
+    team = models.ForeignKey(Team, on_delete=models.CASCADE)
+    status = models.CharField(max_length=50, choices=TeamTournamentRequestStatusType.choices(), default="PENDING")
+
+    class Meta:
+        unique_together = [("tournament", "team")]
+
+    def __str__(self):
+        return '%s - %s (%s)' % (self.tournament.name, self.team.name, self.status)

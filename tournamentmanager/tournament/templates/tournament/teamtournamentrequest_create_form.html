@@ -1,0 +1,18 @@
+{% extends 'tournament/base.html' %}
+
+{% load bootstrap5 %}
+
+{% block title %}
+Tournament app - Register your team to tournament
+{% endblock %}
+
+{% block content %}
+<form role="form" class="col-lg-6 offset-lg-3" method="post">
+    <h1 class="text-center m-2">Register your team to tournament</h1>
+    <div class="justify-content-center">
+    {% csrf_token %}
+    {% bootstrap_form form %}
+    {% buttons submit='Create' reset="Reset" %}{% endbuttons %}
+    </div>
+</form>
+{% endblock %}

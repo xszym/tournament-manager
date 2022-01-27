@@ -1,4 +1,4 @@
-from django.http import Http404, HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect, Http404, HttpResponse
 from django.contrib import messages
 from django.contrib.auth import forms as auth_forms
 from django.urls import reverse
@@ -10,10 +10,11 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator
 from django.core.paginator import EmptyPage
 from django.core.paginator import PageNotAnInteger
+from django.shortcuts import get_object_or_404
 
+from .forms import CreateTeamForm, CreateTournamentForms, TeamTournamentRequestForm
+from .models import Game, Team, TeamTournamentRequestStatusType, Tournament, TeamTournamentRequest
 from .helpers import slug_to_uuid
-from .forms import CreateTeamForm, CreateTournamentForms
-from .models import Game, Team, Tournament
 
 
 class IndexView(TemplateView):
@@ -50,6 +51,7 @@ class CreateTournamentView(LoginRequiredMixin, CreateView):
         # return reverse('tournament-detail', kwargs={'pk': self.object.pk})
         return reverse('home')
 
+
 class CreateTeamView(LoginRequiredMixin, CreateView):
     template_name_suffix = '_create_form'
     model = Team
@@ -67,7 +69,7 @@ class CreateTeamView(LoginRequiredMixin, CreateView):
 
 class TournamentListView(ListView):
     template_name = 'tournament/tournament_list.html'
-    paginate_by = 5
+    paginate_by = 3
 
     def get_context_data(self, **kwargs):
         context = super(TournamentListView, self).get_context_data(**kwargs)
@@ -116,6 +118,7 @@ class TournamentListView(ListView):
         except:
             return ''
 
+
 class TeamListView(LoginRequiredMixin, ListView):
     template_name = 'tournament/team_list.html'
 
@@ -134,6 +137,64 @@ class TeamListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         return Team.objects.all()
 
+
+class CreateTeamTournamentRequestView(LoginRequiredMixin, CreateView):
+    template_name_suffix = '_create_form'
+    model = TeamTournamentRequest
+    form_class = TeamTournamentRequestForm
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        # print(self.request.user)
+        self.object.status = TeamTournamentRequestStatusType.PENDING
+        return response
+
+    def get_success_url(self):
+        # return reverse('tournament-detail', kwargs={'pk': self.object.pk})
+        return reverse('home')
+
+    def get_form_kwargs(self, **kwargs):
+        form_kwargs = super(CreateTeamTournamentRequestView, self).get_form_kwargs(**kwargs)
+        form_kwargs["user"] = self.request.user
+        return form_kwargs
+
+class TournamentManageView(LoginRequiredMixin, ListView):
+    template_name = 'tournament/tournament_manage.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+
+        tournaments = Tournament.objects.filter(referee_list=self.request.user)
+
+        context['tournaments'] = []
+
+        for tournament in tournaments:
+            request_list = TeamTournamentRequest.objects.all()
+            request_list = request_list.filter(tournament=tournament.pk)
+            context['tournaments'].append([tournament, request_list])
+
+        return context
+
+    def get_queryset(self):
+        return Team.objects.all()
+
+def change_TeamTournamentRequest_status(request, request_id, new_status):
+    request = get_object_or_404(TeamTournamentRequest, pk=request_id)
+    print("change_TeamTournamentRequest_status", request)
+    # if request.tournament.
+    try:
+        request.status = TeamTournamentRequestStatusType(new_status).name
+        if request.status == TeamTournamentRequestStatusType.ACCEPTED.name:
+            request.tournament.team_list.add(request.team)
+        request.save()
+
+    except (KeyError, request.DoesNotExist):
+        # Redisplay the question voting form.
+        return reverse('tournament_manage')
+    return HttpResponseRedirect(reverse('tournament_manage'))
+
+  
 class TeamDetailsView(DetailView):
     model = Team
 
