@@ -48,8 +48,7 @@ class CreateTournamentView(LoginRequiredMixin, CreateView):
         return response
 
     def get_success_url(self):
-        # return reverse('tournament-detail', kwargs={'pk': self.object.pk})
-        return reverse('home')
+        return self.object.url
 
 
 class CreateTeamView(LoginRequiredMixin, CreateView):
@@ -63,8 +62,7 @@ class CreateTeamView(LoginRequiredMixin, CreateView):
         return response
 
     def get_success_url(self):
-        # return reverse('team-management', kwargs={'pk': self.object.pk})
-        return reverse('home')
+        return self.object.url
 
 
 class TournamentListView(ListView):
@@ -145,13 +143,11 @@ class CreateTeamTournamentRequestView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         response = super().form_valid(form)
-        # print(self.request.user)
         self.object.status = TeamTournamentRequestStatusType.PENDING
         return response
 
     def get_success_url(self):
-        # return reverse('tournament-detail', kwargs={'pk': self.object.pk})
-        return reverse('home')
+        return self.object.tournament.url
 
     def get_form_kwargs(self, **kwargs):
         form_kwargs = super(CreateTeamTournamentRequestView, self).get_form_kwargs(**kwargs)
@@ -179,10 +175,10 @@ class TournamentManageView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         return Team.objects.all()
 
+
 def change_TeamTournamentRequest_status(request, request_id, new_status):
     request = get_object_or_404(TeamTournamentRequest, pk=request_id)
     print("change_TeamTournamentRequest_status", request)
-    # if request.tournament.
     try:
         request.status = TeamTournamentRequestStatusType(new_status).name
         if request.status == TeamTournamentRequestStatusType.ACCEPTED.name:
@@ -194,7 +190,7 @@ def change_TeamTournamentRequest_status(request, request_id, new_status):
         return reverse('tournament_manage')
     return HttpResponseRedirect(reverse('tournament_manage'))
 
-  
+
 class TeamDetailsView(DetailView):
     model = Team
 
@@ -204,3 +200,13 @@ class TeamDetailsView(DetailView):
             return super().get_object(queryset)
         except ValueError:
             raise Http404('Invalid team id format')
+
+class TournamentDetailsView(DetailView):
+    model = Tournament
+
+    def get_object(self, queryset = None):
+        try:
+            self.kwargs['pk'] = slug_to_uuid(self.kwargs.get('slug'))
+            return super().get_object(queryset)
+        except ValueError:
+            raise Http404('Invalid tournament id format')
