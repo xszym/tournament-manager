@@ -1,11 +1,10 @@
-from django.http import HttpResponse, HttpResponseRedirect, Http404, HttpResponse
+from django.http import HttpResponse, HttpResponseForbidden, HttpResponseRedirect, Http404, HttpResponse, HttpResponseNotFound
 from django.contrib import messages
 from django.contrib.auth import forms as auth_forms
 from django.urls import reverse
+from django.views import View
 from django.views.generic import CreateView, ListView, FormView, TemplateView, DetailView
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import redirect, render
-from django.http.request import HttpRequest
+from django.shortcuts import redirect
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.paginator import Paginator
 from django.core.paginator import EmptyPage
@@ -13,8 +12,8 @@ from django.core.paginator import PageNotAnInteger
 from django.shortcuts import get_object_or_404
 
 from .forms import CreateTeamForm, CreateTournamentForms, TeamTournamentRequestForm
-from .models import Game, Team, TeamTournamentRequestStatusType, Tournament, TeamTournamentRequest
-from .helpers import slug_to_uuid
+from .models import Game, Team, JoinRequestStatusType, TeamJoinRequest, Tournament, TeamTournamentRequest
+from .helpers import slug_to_uuid, uuid_to_slug
 
 
 class IndexView(TemplateView):
@@ -143,7 +142,7 @@ class CreateTeamTournamentRequestView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         response = super().form_valid(form)
-        self.object.status = TeamTournamentRequestStatusType.PENDING
+        self.object.status = JoinRequestStatusType.PENDING
         return response
 
     def get_success_url(self):
@@ -178,17 +177,32 @@ class TournamentManageView(LoginRequiredMixin, ListView):
 
 def change_TeamTournamentRequest_status(request, request_id, new_status):
     request = get_object_or_404(TeamTournamentRequest, pk=request_id)
-    print("change_TeamTournamentRequest_status", request)
     try:
-        request.status = TeamTournamentRequestStatusType(new_status).name
-        if request.status == TeamTournamentRequestStatusType.ACCEPTED.name:
+        request.status = JoinRequestStatusType(new_status).name
+        if request.status == JoinRequestStatusType.ACCEPTED.name:
             request.tournament.team_list.add(request.team)
+        else:
+            request.tournament.team_list.remove(request.team)
+
         request.save()
 
     except (KeyError, request.DoesNotExist):
         # Redisplay the question voting form.
         return reverse('tournament_manage')
     return HttpResponseRedirect(reverse('tournament_manage'))
+
+
+class RequestTeamJoinView(LoginRequiredMixin, View):
+
+    def get(self, request, *args, **kwargs):
+        slug = kwargs['slug']
+        uuid = slug_to_uuid(slug)
+        team = Team.objects.get(pk=uuid)
+        if team is None:
+            return HttpResponseNotFound()
+        join = TeamJoinRequest(team=team, user=request.user)
+        join.save()
+        return redirect(team.url)
 
 
 class TeamDetailsView(DetailView):
@@ -201,6 +215,26 @@ class TeamDetailsView(DetailView):
         except ValueError:
             raise Http404('Invalid team id format')
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        if self.request.user.is_anonymous:
+            return context
+
+        if self.object.team_manager == self.request.user:
+            context['is_manager'] = True
+            context['requests'] = TeamJoinRequest.objects.filter(team=self.object, status=JoinRequestStatusType.PENDING.name)
+        else:
+            context['is_manager'] = False
+
+        if self.request.user in self.object.members.all():
+            context['is_member'] = True
+        else:
+            context['is_member'] = False
+            context['request'] = TeamJoinRequest.objects.filter(user=self.request.user, team=self.object).first()
+
+        return context
+
 class TournamentDetailsView(DetailView):
     model = Tournament
 
@@ -210,3 +244,20 @@ class TournamentDetailsView(DetailView):
             return super().get_object(queryset)
         except ValueError:
             raise Http404('Invalid tournament id format')
+
+
+def change_JoinTeamRequest_status(request, request_id, new_status):
+    o = get_object_or_404(TeamJoinRequest, pk=request_id)
+    if request.user != o.team.team_manager:
+        return HttpResponseForbidden()
+    request = get_object_or_404(TeamJoinRequest, pk=request_id)
+    try:
+        request.status = JoinRequestStatusType(new_status).name
+        if request.status == JoinRequestStatusType.ACCEPTED.name:
+            request.team.members.add(request.user)
+        else:
+            request.team.members.remove(request.user)
+        request.save()
+    except (KeyError, request.DoesNotExist):
+        return HttpResponseRedirect(reverse('team_details', kwargs={'slug': uuid_to_slug(request.team.id)}))
+    return HttpResponseRedirect(reverse('team_details', kwargs={'slug': uuid_to_slug(request.team.id)}))

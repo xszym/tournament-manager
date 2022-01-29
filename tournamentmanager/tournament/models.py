@@ -29,6 +29,11 @@ class Team(models.Model):
         slug = uuid_to_slug(self.id)
         return reverse('team_details', kwargs={'slug':slug})
 
+    @property
+    def join_url(self):
+        slug = uuid_to_slug(self.id)
+        return reverse('join_team_request', kwargs={'slug':slug})
+
     def __str__(self):
         return '%s' % (self.name)
 
@@ -84,7 +89,7 @@ class Match(models.Model):
         return '%s (%d) vs %s (%d)' % (self.team_A.name, self.team_A_score.value, self.team_B.name, self.team_B_score.value)
 
 
-class TeamTournamentRequestStatusType(Enum):
+class JoinRequestStatusType(Enum):
     PENDING = "PENDING"
     ACCEPTED = "ACCEPTED"
     REJECTED = "REJECTED"
@@ -97,10 +102,48 @@ class TeamTournamentRequestStatusType(Enum):
 class TeamTournamentRequest(models.Model):
     tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE)
     team = models.ForeignKey(Team, on_delete=models.CASCADE)
-    status = models.CharField(max_length=50, choices=TeamTournamentRequestStatusType.choices(), default="PENDING")
+    status = models.CharField(max_length=50, choices=JoinRequestStatusType.choices(), default=JoinRequestStatusType.PENDING.value)
 
     class Meta:
         unique_together = [("tournament", "team")]
 
     def __str__(self):
         return '%s - %s (%s)' % (self.tournament.name, self.team.name, self.status)
+
+
+class TeamJoinRequest(models.Model):
+    team = models.ForeignKey(Team, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    status = models.CharField(max_length=50, choices=JoinRequestStatusType.choices(
+    ), default=JoinRequestStatusType.PENDING.value)
+
+    class Meta:
+        unique_together = [("team", "user")]
+
+    @property
+    def accept_url(self):
+        kwargs = {
+            'request_id': self.id,
+            'new_status': JoinRequestStatusType.ACCEPTED.value
+        }
+        return reverse('change_join_team_request_status', kwargs=kwargs)
+
+    @property
+    def reject_url(self):
+        kwargs = {
+            'request_id': self.id,
+            'new_status': JoinRequestStatusType.REJECTED.value
+        }
+        return reverse('change_join_team_request_status', kwargs=kwargs)
+
+    def is_accepted(self):
+        return self.status == JoinRequestStatusType.ACCEPTED.value
+
+    def is_pending(self):
+        return self.status == JoinRequestStatusType.PENDING.value
+
+    def is_rejected(self):
+        return self.status == JoinRequestStatusType.REJECTED.value
+
+    def __str__(self):
+        return '%s - %s (%s)' % (self.team.name, self.user.username, self.status)
