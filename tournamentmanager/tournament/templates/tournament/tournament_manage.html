@@ -8,15 +8,14 @@
 <h1 class="text-center m-2 mb-4 display-5">Your tournaments</h1>
 
 <div class="accordion" id="accordionPanelsStayOpenExample">
-
   {% for tournament, request_list in tournaments %}
   <div class="accordion-item">
     <h2 class="accordion-header" id="panelsStayOpen-headingOne-{{tournament.id}}">
-      <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseOne-{{tournament.id}}" aria-expanded="true" aria-controls="panelsStayOpen-collapseOne-{{tournament.id}}">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseOne-{{tournament.id}}" aria-expanded="false" aria-controls="panelsStayOpen-collapseOne-{{tournament.id}}">
         {{ tournament.name }}  ({{ tournament.team_list.count }} registered {% if tournament.team_list.count < 2 %} team{% else %} teams{% endif %})
       </button>
     </h2>
-    <div id="panelsStayOpen-collapseOne-{{tournament.id}}" class="accordion-collapse collapse show" aria-labelledby="panelsStayOpen-headingOne-{{tournament.id}}">
+    <div id="panelsStayOpen-collapseOne-{{tournament.id}}" class="accordion-collapse collapse" aria-labelledby="panelsStayOpen-headingOne-{{tournament.id}}" style="margin-bottom: 10px;">
       <div class="accordion-body">
         <div class="list-group">
           {% for request in request_list %}
@@ -36,6 +35,11 @@
           <div class="alert alert-light" role="alert">No requests</div>
           {% endfor %}
         </div>
+      </div>
+      <div >
+        <a type="button" class="btn btn-primary btn-block" href="{% url 'generate_matches' tournament.slug %}">Generate matches</a>
+        <a type="button" class="btn btn-danger btn-block" href="{% url 'remove_matches' tournament.slug %}">Remove all matches</a>
+        <a type="button" class="btn btn-success btn-block" href="{% url 'tournament_details' tournament.slug %}">See tournament details</a>
       </div>
     </div>
   </div>

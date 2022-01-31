@@ -251,13 +251,15 @@ class TournamentDetailsView(DetailView):
         context = super().get_context_data(**kwargs)
 
         matches = list(Match.objects.filter(tournament=self.object))
-        matches.sort(key=lambda x: x.match_number)
-        rounds = [[] for i in range(int(math.log2(len(matches)+1)))]
-        for index, match in enumerate(matches):
-            round = int(math.log2(index+1))
-            rounds[round].append(match)
+        rounds = [[] for _ in range(int(math.log2(len(matches)+1)))]
+        if len(matches) > 0:
+            matches.sort(key=lambda x: x.match_number)
+            context['final'] = matches[0]
+            for index, match in enumerate(matches):
+                round = int(math.log2(index+1))
+                rounds[round].append(match)
 
-        rounds.reverse()
+            rounds.reverse()
         context['rounds'] = rounds
         return context
 
@@ -282,11 +284,27 @@ def generate_matches(request, slug):
     tournament = get_object_or_404(Tournament, pk=slug_to_uuid(slug))
     if tournament.referee_list.filter(pk=request.user.pk).count() == 0:
         return HttpResponseForbidden()
+    if len(Match.objects.filter(tournament=tournament)) > 0:
+        messages.error(request, message=str("Tournament already has matches"))
+        return HttpResponseRedirect(reverse('tournament_manage'))
+
     try:
         matches = generate_matches_for_tournament(tournament)
         [m.save() for m in matches]
     except Exception as e:
         messages.error(request, message=str(e))
         return HttpResponseRedirect(reverse('tournament_manage'))
+    return HttpResponseRedirect(reverse('tournament_details', kwargs={'slug':tournament.slug}))
 
-    return JsonResponse("OK", safe=False)
+
+def remove_all_matches_for_tournament(request, slug):
+    tournament = get_object_or_404(Tournament, pk=slug_to_uuid(slug))
+    if tournament.referee_list.filter(pk=request.user.pk).count() == 0:
+        return HttpResponseForbidden()
+    if len(Match.objects.filter(tournament=tournament)) == 0:
+        messages.error(request, message=str("Tournament does not has matches"))
+        return HttpResponseRedirect(reverse('tournament_manage'))
+    Match.objects.filter(tournament=tournament).delete()
+    messages.info(request, message=str("Matches from tournament removed"))
+
+    return HttpResponseRedirect(reverse('tournament_manage'))

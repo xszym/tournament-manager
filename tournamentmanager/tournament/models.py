@@ -65,6 +65,11 @@ class Tournament(models.Model):
         slug = uuid_to_slug(self.id)
         return reverse('tournament_details', kwargs={'slug':slug})
 
+    @property
+    def slug(self):
+        slug = uuid_to_slug(self.id)
+        return slug
+
     def __str__(self):
         return '%s %s' % (self.start_date, self.name)
 
@@ -81,7 +86,7 @@ class Match(models.Model):
     is_end = models.BooleanField(default=False)
 
     def __str__(self):
-        return '"%s" (%d) vs "%s" (%d)' % (self.team_A, self.team_A_score, self.team_B, self.team_B_score)
+        return '%s | Match %d | "%s" (%d) vs "%s" (%d)' % (self.tournament.name, self.match_number, self.team_A, self.team_A_score, self.team_B, self.team_B_score)
 
 
 class JoinRequestStatusType(Enum):
