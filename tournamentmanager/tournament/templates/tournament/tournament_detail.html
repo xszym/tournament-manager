@@ -94,7 +94,11 @@
         {% endfor %}
       </main>
     </div>
-    <div class="col col-lg-2 align-self-center h3"><span class="badge rounded-pill bg-warning text-dark">{{ final.winner_team|default:"" }}</span></div>
+    <div class="col col-lg-2 align-self-center h3">
+      {% if final.winner_team %}
+      <a href="{{final.winner_team.url}}"><span class="badge rounded-pill bg-warning text-dark">{{ final.winner_team }}</span></a>
+      {% endif %}
+    </div>
   </div>
 </div>
 {% endif %}
