@@ -252,9 +252,9 @@ class TournamentDetailsView(DetailView):
 
         matches = list(Match.objects.filter(tournament=self.object))
         matches.sort(key=lambda x: x.match_number)
-        rounds = [[] for i in range(int(math.sqrt(len(matches)+1)))]
+        rounds = [[] for i in range(int(math.log2(len(matches)+1)))]
         for index, match in enumerate(matches):
-            round = int(math.sqrt(index))
+            round = int(math.log2(index+1))
             rounds[round].append(match)
 
         rounds.reverse()
