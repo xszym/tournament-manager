@@ -77,7 +77,7 @@ class Match(models.Model):
     team_B = models.ForeignKey(Team, null=True, on_delete=models.CASCADE, related_name='teamB')
     team_A_score = models.IntegerField(default=0)
     team_B_score = models.IntegerField(default=0)
-    winner_team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='winner_team')
+    winner_team = models.ForeignKey(Team, null=True, on_delete=models.CASCADE, related_name='winner_team')
     is_end = models.BooleanField(default=False)
 
     def __str__(self):

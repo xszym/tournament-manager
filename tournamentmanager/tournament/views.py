@@ -1,3 +1,5 @@
+import math
+
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseRedirect, Http404, HttpResponse, HttpResponseNotFound, JsonResponse
 from django.contrib import messages
 from django.contrib.auth import forms as auth_forms
@@ -12,7 +14,7 @@ from django.core.paginator import PageNotAnInteger
 from django.shortcuts import get_object_or_404
 
 from .forms import CreateTeamForm, CreateTournamentForms, TeamTournamentRequestForm
-from .models import Game, Team, JoinRequestStatusType, TeamJoinRequest, Tournament, TeamTournamentRequest
+from .models import Game, Team, JoinRequestStatusType, TeamJoinRequest, Tournament, TeamTournamentRequest, Match
 from .helpers import slug_to_uuid, uuid_to_slug
 from .tournament_logic import generate_matches_for_tournament
 
@@ -245,6 +247,19 @@ class TournamentDetailsView(DetailView):
         except ValueError:
             raise Http404('Invalid tournament id format')
 
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        matches = list(Match.objects.filter(tournament=self.object))
+        matches.sort(key=lambda x: x.match_number)
+        rounds = [[] for i in range(int(math.sqrt(len(matches)+1)))]
+        for index, match in enumerate(matches):
+            round = int(math.sqrt(index))
+            rounds[round].append(match)
+
+        rounds.reverse()
+        context['rounds'] = rounds
+        return context
 
 def change_JoinTeamRequest_status(request, request_id, new_status):
     o = get_object_or_404(TeamJoinRequest, pk=request_id)
@@ -269,6 +284,7 @@ def generate_matches(request, slug):
         return HttpResponseForbidden()
     try:
         matches = generate_matches_for_tournament(tournament)
+        [m.save() for m in matches]
     except Exception as e:
         messages.error(request, message=str(e))
         return HttpResponseRedirect(reverse('tournament_manage'))
