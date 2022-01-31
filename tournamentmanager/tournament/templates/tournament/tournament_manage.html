@@ -26,8 +26,10 @@
             <a class="mx-1" href="{% url 'change_TeamTournamentRequest_status' request.id 'REJECTED' %}"><span class="badge bg-danger">REJECT</span></a>
             <span class="badge bg-warning rounded-pill ms-auto"> PENDING </span>
             {% elif request.status == "ACCEPTED" %}
+              <a class="mx-1" href="{% url 'change_TeamTournamentRequest_status' request.id 'REJECTED' %}"><span class="badge bg-danger">REMOVE</span></a>
               <span class="badge bg-success rounded-pill ms-auto">ACCEPTED</span>
             {% elif request.status == "REJECTED" %}
+              <a class="mx-1" href="{% url 'change_TeamTournamentRequest_status' request.id 'ACCEPTED' %}"><span class="badge bg-success">ADD</span></a>
               <span class="badge bg-danger rounded-pill ms-auto">REJECTED</span>
             {% endif %}
           </div>

@@ -161,7 +161,6 @@ class TournamentManageView(LoginRequiredMixin, ListView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
-
         tournaments = Tournament.objects.filter(referee_list=self.request.user)
 
         context['tournaments'] = []
@@ -178,19 +177,26 @@ class TournamentManageView(LoginRequiredMixin, ListView):
 
 
 def change_TeamTournamentRequest_status(request, request_id, new_status):
-    request = get_object_or_404(TeamTournamentRequest, pk=request_id)
+    teamTournamentRequest = get_object_or_404(TeamTournamentRequest, pk=request_id)
+    matches = list(Match.objects.filter(tournament=teamTournamentRequest.tournament))
+    if len(matches) > 0:
+        messages.error(request, message=str("You have matches in this tournament"))
+        return HttpResponseRedirect(reverse('tournament_manage'))
+
     try:
-        request.status = JoinRequestStatusType(new_status).name
-        if request.status == JoinRequestStatusType.ACCEPTED.name:
-            request.tournament.team_list.add(request.team)
+        teamTournamentRequest.status = JoinRequestStatusType(new_status).name
+        if teamTournamentRequest.status == JoinRequestStatusType.ACCEPTED.name:
+            teamTournamentRequest.tournament.team_list.add(teamTournamentRequest.team)
         else:
-            request.tournament.team_list.remove(request.team)
+            teamTournamentRequest.tournament.team_list.remove(teamTournamentRequest.team)
 
-        request.save()
+        teamTournamentRequest.save()
 
-    except (KeyError, request.DoesNotExist):
+    except (KeyError, teamTournamentRequest.DoesNotExist) as e:
         # Redisplay the question voting form.
+        messages.error(teamTournamentRequest, message=str(e))
         return reverse('tournament_manage')
+        
     return HttpResponseRedirect(reverse('tournament_manage'))
 
 

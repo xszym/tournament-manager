@@ -17,7 +17,7 @@ def generate_matches_for_group_elimination(tournament: Tournament):
     Generate matches for group elimination
     return list of matches
     '''
-    raise NotImplementedError("Not implemented yet")
+    raise NotImplementedError("Group elimination Not implemented yet")
     matches = []
     teams = tournament.team_list.objects.all()
 
