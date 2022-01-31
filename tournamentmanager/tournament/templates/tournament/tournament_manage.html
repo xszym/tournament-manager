@@ -22,14 +22,22 @@
           <div class="list-group-item list-group-item-action list-group-item-secondary d-flex">
             <a class="text-decoration-none fw-bolder" href="{{request.team.url}}"> {{ request.team.name }} </a>
             {% if request.status == "PENDING" %}
+            {% if not tournament.has_matches %}
             <a class="mx-1" href="{% url 'change_TeamTournamentRequest_status' request.id 'ACCEPTED' %}"><span class="badge bg-success">ACCEPT</span></a>
             <a class="mx-1" href="{% url 'change_TeamTournamentRequest_status' request.id 'REJECTED' %}"><span class="badge bg-danger">REJECT</span></a>
-            <span class="badge bg-warning rounded-pill ms-auto"> PENDING </span>
+            {% endif %}
+            <span class="badge bg-secondary rounded-pill ms-auto"> PENDING </span>
             {% elif request.status == "ACCEPTED" %}
-              <a class="mx-1" href="{% url 'change_TeamTournamentRequest_status' request.id 'REJECTED' %}"><span class="badge bg-danger">REMOVE</span></a>
+            {% if not tournament.has_matches %}
+              <a class="mx-1" href="{% url 'change_TeamTournamentRequest_status' request.id 'REJECTED' %}"><small class="text-muted"><span class="badge bg-danger">REMOVE</span></small></a>
+              <a class="mx-1" href="{% url 'change_TeamTournamentRequest_status' request.id 'PENDING' %}"><small class="text-muted"><span class="badge bg-secondary">RESTORE PENDING</span></small></a>
+            {% endif %}
               <span class="badge bg-success rounded-pill ms-auto">ACCEPTED</span>
             {% elif request.status == "REJECTED" %}
-              <a class="mx-1" href="{% url 'change_TeamTournamentRequest_status' request.id 'ACCEPTED' %}"><span class="badge bg-success">ADD</span></a>
+            {% if not tournament.has_matches %}
+              <a class="mx-1" href="{% url 'change_TeamTournamentRequest_status' request.id 'ACCEPTED' %}"><small class="text-muted"><span class="badge bg-success">ADD</span></small></a>
+              <a class="mx-1" href="{% url 'change_TeamTournamentRequest_status' request.id 'PENDING' %}"><small class="text-muted"><span class="badge bg-secondary">RESTORE PENDING</span></small></a>
+            {% endif %}
               <span class="badge bg-danger rounded-pill ms-auto">REJECTED</span>
             {% endif %}
           </div>
@@ -39,8 +47,11 @@
         </div>
       </div>
       <div >
-        <a type="button" class="btn btn-primary btn-block" href="{% url 'generate_matches' tournament.slug %}">Generate matches</a>
-        <a type="button" class="btn btn-danger btn-block" href="{% url 'remove_matches' tournament.slug %}">Remove all matches</a>
+        {% if tournament.has_matches %}
+          <a type="button" class="btn btn-danger btn-block" href="{% url 'remove_matches' tournament.slug %}">Remove all matches</a>
+        {% else %}
+          <a type="button" class="btn btn-primary btn-block" href="{% url 'generate_matches' tournament.slug %}">Generate matches</a>
+        {% endif %}
         <a type="button" class="btn btn-success btn-block" href="{% url 'tournament_details' tournament.slug %}">See tournament details</a>
       </div>
     </div>

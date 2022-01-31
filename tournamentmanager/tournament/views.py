@@ -14,9 +14,9 @@ from django.core.paginator import PageNotAnInteger
 from django.shortcuts import get_object_or_404
 
 from .forms import CreateTeamForm, CreateTournamentForms, TeamTournamentRequestForm
-from .models import Game, Team, JoinRequestStatusType, TeamJoinRequest, Tournament, TeamTournamentRequest, Match
+from .models import Game, Team, JoinRequestStatusType, TeamJoinRequest, Tournament, TeamTournamentRequest, Match, EliminationType
 from .helpers import slug_to_uuid, uuid_to_slug
-from .tournament_logic import generate_matches_for_tournament
+from .tournament_logic import generate_matches_for_tournament, accept_match_in_knockout_elemination
 
 class IndexView(TemplateView):
     template_name = 'tournament/home.html'
@@ -268,6 +268,27 @@ class TournamentDetailsView(DetailView):
             rounds.reverse()
         context['rounds'] = rounds
         return context
+        
+class MatchDetailsView(DetailView):
+    model = Match
+
+    def get_object(self, queryset = None):
+        try:
+            self.kwargs['pk'] = slug_to_uuid(self.kwargs.get('slug'))
+            return super().get_object(queryset)
+        except ValueError:
+            raise Http404('Invalid match id format')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        if self.request.user.is_anonymous:
+            return context
+
+        context['is_referee'] = self.request.user in list(self.object.tournament.referee_list.all())
+
+        return context
+
 
 def change_JoinTeamRequest_status(request, request_id, new_status):
     o = get_object_or_404(TeamJoinRequest, pk=request_id)
@@ -314,3 +335,24 @@ def remove_all_matches_for_tournament(request, slug):
     messages.info(request, message=str("Matches from tournament removed"))
 
     return HttpResponseRedirect(reverse('tournament_manage'))
+
+
+def accept_match_score(request, slug):
+    match = get_object_or_404(Match, pk=slug_to_uuid(slug))
+    if match.tournament.referee_list.filter(pk=request.user.pk).count() == 0:
+        messages.error(request, message=str("Access forbidden"))
+        return HttpResponseRedirect(reverse('tournament_details', kwargs={'slug':match.tournament.slug}))
+    if match.is_end:
+        messages.error(request, message=str("Match is already finished"))
+        return HttpResponseRedirect(reverse('tournament_details', kwargs={'slug':match.tournament.slug}))
+    
+    if match.tournament.type_of_elimination == EliminationType.KNOCKOUT.name:
+        if match.team_A_score == match.team_B_score:
+            messages.error(request, message=str("Scores are the same"))
+            return HttpResponseRedirect(reverse('match_details', kwargs={'slug': uuid_to_slug(match.id)}))
+        accept_match_in_knockout_elemination(match)
+    else:
+        messages.info(request, message=str("Not implemented"))
+    
+    messages.info(request, message=str("Match score accepted"))
+    return HttpResponseRedirect(reverse('tournament_details', kwargs={'slug':match.tournament.slug}))

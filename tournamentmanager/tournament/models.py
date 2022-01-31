@@ -26,8 +26,11 @@ class Team(models.Model):
 
     @property
     def url(self):
-        slug = uuid_to_slug(self.id)
-        return reverse('team_details', kwargs={'slug':slug})
+        return reverse('team_details', kwargs={'slug':self.slug})
+    
+    @property
+    def slug(self):
+        return uuid_to_slug(self.id)
 
     @property
     def join_url(self):
@@ -61,14 +64,17 @@ class Tournament(models.Model):
     referee_list = models.ManyToManyField(User, related_name='referee_list', blank=True)
 
     @property
+    def has_matches(self):
+        matches = list(Match.objects.filter(tournament=self))
+        return len(matches) > 0
+
+    @property
     def url(self):
-        slug = uuid_to_slug(self.id)
-        return reverse('tournament_details', kwargs={'slug':slug})
+        return reverse('tournament_details', kwargs={'slug':self.slug})
 
     @property
     def slug(self):
-        slug = uuid_to_slug(self.id)
-        return slug
+        return uuid_to_slug(self.id)
 
     def __str__(self):
         return '%s %s' % (self.start_date, self.name)
@@ -85,8 +91,16 @@ class Match(models.Model):
     winner_team = models.ForeignKey(Team, null=True, on_delete=models.CASCADE, related_name='winner_team')
     is_end = models.BooleanField(default=False)
 
+    @property
+    def url(self):
+        return reverse('match_details', kwargs={'slug':self.slug})
+
+    @property
+    def slug(self):
+        return uuid_to_slug(self.id)
+        
     def __str__(self):
-        return '%s | Match %d | "%s" (%d) vs "%s" (%d)' % (self.tournament.name, self.match_number, self.team_A, self.team_A_score, self.team_B, self.team_B_score)
+        return '%s | Match %d | %s (%d) vs %s (%d)' % (self.tournament.name, self.match_number, self.team_A, self.team_A_score, self.team_B, self.team_B_score)
 
 
 class JoinRequestStatusType(Enum):

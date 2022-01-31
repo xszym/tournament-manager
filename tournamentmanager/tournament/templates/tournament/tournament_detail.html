@@ -76,17 +76,17 @@
           {% for match in round %}
             <li class="spacer">&nbsp;</li>
             {% if match.winner_team == match.team_A %}
-              <li class="game game-top winner">{% if match.team_A %}{{ match.team_A }} <span>{{match.team_A_score}}</span>{% endif %}</li>
+              <a href="{{match.url}}" class="text-decoration-none" ><li class="game game-top winner">{% if match.team_A %}{{ match.team_A }} <span>{{match.team_A_score}}</span>{% endif %}</li></a>
               <li class="game game-spacer">&nbsp;</li>
-              <li class="game game-bottom ">{% if match.team_B %}{{ match.team_B }} <span>{{match.team_B_score}}</span>{% endif %}</li>
+              <a href="{{match.url}}" class="text-decoration-none"><li class="game game-bottom ">{% if match.team_B %}{{ match.team_B }} <span>{{match.team_B_score}}</span>{% endif %}</li></a>
             {% elif match.winner_team == match.team_B %}
-              <li class="game game-top ">{% if match.team_A %}{{ match.team_A }} <span>{{match.team_A_score}}</span>{% endif %}</li>
+              <a href="{{match.url}}" class="text-decoration-none"><li class="game game-top ">{% if match.team_A %}{{ match.team_A }} <span>{{match.team_A_score}}</span>{% endif %}</li></a>
               <li class="game game-spacer">&nbsp;</li>
-              <li class="game game-bottom winner">{% if match.team_B %}{{ match.team_B }} <span>{{match.team_B_score}}</span>{% endif %}</li>
+              <a href="{{match.url}}" class="text-decoration-none"><li class="game game-bottom winner">{% if match.team_B %}{{ match.team_B }} <span>{{match.team_B_score}}</span>{% endif %}</li></a>
             {% else %}
-              <li class="game game-top ">{% if match.team_A %}{{ match.team_A }} <span>{{match.team_A_score}}</span>{% endif %}</li>
+              <a href="{{match.url}}" class="text-decoration-none"><li class="game game-top ">{% if match.team_A %}{{ match.team_A }} <span>{{match.team_A_score}}</span>{% endif %}</li></a>
               <li class="game game-spacer">&nbsp;</li>
-              <li class="game game-bottom ">{% if match.team_B %}{{ match.team_B }} <span>{{match.team_B_score}}</span>{% endif %}</li>
+              <a href="{{match.url}}" class="text-decoration-none"><li class="game game-bottom ">{% if match.team_B %}{{ match.team_B }} <span>{{match.team_B_score}}</span>{% endif %}</li></a>
             {% endif %}
           {% endfor %}
           <li class="spacer">&nbsp;</li>

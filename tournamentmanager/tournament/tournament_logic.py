@@ -67,3 +67,21 @@ def generate_matches_for_knockout_elemination(tournament: Tournament):
         match = Match(tournament=tournament, match_number=i, team_A=team1, team_B=team2)
         matches.append(match)
     return matches
+
+def accept_match_in_knockout_elemination(match):
+    if match.team_A_score > match.team_B_score:
+        match.winner_team = match.team_A
+    elif match.team_A_score < match.team_B_score:
+        match.winner_team = match.team_B
+
+    if match.match_number > 0:
+        next_match_number = (match.match_number - 1) // 2
+        next_match = Match.objects.filter(tournament=match.tournament, match_number=next_match_number).first()
+        if match.match_number % 2:
+            next_match.team_A = match.winner_team
+        else:
+            next_match.team_B = match.winner_team
+        next_match.save()
+    match.is_end = True
+    match.save()
+    
