@@ -65,6 +65,7 @@
   </div>
 </div>
 
+{% if object.type_of_elimination == "KNOCKOUT" %}
 <link rel="stylesheet" href="{% static 'styles/bracket.css' %}">
 <main id="tournament">
   {% for round in rounds %}
@@ -90,5 +91,5 @@
 	</ul>
   {% endfor %}
 </main>
-
+{% endif %}
 {% endblock content %}
