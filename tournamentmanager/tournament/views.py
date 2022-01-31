@@ -346,6 +346,10 @@ def accept_match_score(request, slug):
         messages.error(request, message=str("Match is already finished"))
         return HttpResponseRedirect(reverse('tournament_details', kwargs={'slug':match.tournament.slug}))
     
+    if match.team_A == None or match.team_B == None:
+        messages.error(request, message=str("There has to be two teams to play a match"))
+        return HttpResponseRedirect(reverse('match_details', kwargs={'slug':match.slug}))
+
     if match.tournament.type_of_elimination == EliminationType.KNOCKOUT.name:
         if match.team_A_score == match.team_B_score:
             messages.error(request, message=str("Scores are the same"))
@@ -355,4 +359,4 @@ def accept_match_score(request, slug):
         messages.info(request, message=str("Not implemented"))
     
     messages.info(request, message=str("Match score accepted"))
-    return HttpResponseRedirect(reverse('tournament_details', kwargs={'slug':match.tournament.slug}))
+    return HttpResponseRedirect(reverse('match_details', kwargs={'slug':match.slug}))

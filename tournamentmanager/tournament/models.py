@@ -26,11 +26,12 @@ class Team(models.Model):
 
     @property
     def url(self):
-        return reverse('team_details', kwargs={'slug':self.slug})
+        slug = uuid_to_slug(self.id)
+        return reverse('team_details', kwargs={'slug':slug})
     
     @property
     def slug(self):
-        return uuid_to_slug(self.id)
+        return
 
     @property
     def join_url(self):
