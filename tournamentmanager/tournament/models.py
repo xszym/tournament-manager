@@ -69,24 +69,19 @@ class Tournament(models.Model):
         return '%s %s' % (self.start_date, self.name)
 
 
-class Score(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    value = models.FloatField(default=0)
-    is_acceptted = models.BooleanField(default=False)
-
-
 class Match(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE)
-    team_A = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='teamA')
-    team_B = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='teamB')
-    team_A_score = models.ForeignKey(Score, on_delete=models.CASCADE, related_name='teamA_score')
-    team_B_score = models.ForeignKey(Score, on_delete=models.CASCADE, related_name='teamB_score')
+    match_number = models.IntegerField(null=False)
+    team_A = models.ForeignKey(Team, null=True, on_delete=models.CASCADE, related_name='teamA')
+    team_B = models.ForeignKey(Team, null=True, on_delete=models.CASCADE, related_name='teamB')
+    team_A_score = models.IntegerField(default=0)
+    team_B_score = models.IntegerField(default=0)
     winner_team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='winner_team')
     is_end = models.BooleanField(default=False)
 
     def __str__(self):
-        return '%s (%d) vs %s (%d)' % (self.team_A.name, self.team_A_score.value, self.team_B.name, self.team_B_score.value)
+        return '"%s" (%d) vs "%s" (%d)' % (self.team_A, self.team_A_score, self.team_B, self.team_B_score)
 
 
 class JoinRequestStatusType(Enum):

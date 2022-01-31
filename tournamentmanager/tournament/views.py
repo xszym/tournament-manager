@@ -1,4 +1,4 @@
-from django.http import HttpResponse, HttpResponseForbidden, HttpResponseRedirect, Http404, HttpResponse, HttpResponseNotFound
+from django.http import HttpResponse, HttpResponseForbidden, HttpResponseRedirect, Http404, HttpResponse, HttpResponseNotFound, JsonResponse
 from django.contrib import messages
 from django.contrib.auth import forms as auth_forms
 from django.urls import reverse
@@ -14,7 +14,7 @@ from django.shortcuts import get_object_or_404
 from .forms import CreateTeamForm, CreateTournamentForms, TeamTournamentRequestForm
 from .models import Game, Team, JoinRequestStatusType, TeamJoinRequest, Tournament, TeamTournamentRequest
 from .helpers import slug_to_uuid, uuid_to_slug
-
+from .tournament_logic import generate_matches_for_tournament
 
 class IndexView(TemplateView):
     template_name = 'tournament/home.html'
@@ -261,3 +261,16 @@ def change_JoinTeamRequest_status(request, request_id, new_status):
     except (KeyError, request.DoesNotExist):
         return HttpResponseRedirect(reverse('team_details', kwargs={'slug': uuid_to_slug(request.team.id)}))
     return HttpResponseRedirect(reverse('team_details', kwargs={'slug': uuid_to_slug(request.team.id)}))
+
+
+def generate_matches(request, slug):
+    tournament = get_object_or_404(Tournament, pk=slug_to_uuid(slug))
+    if tournament.referee_list.filter(pk=request.user.pk).count() == 0:
+        return HttpResponseForbidden()
+    try:
+        matches = generate_matches_for_tournament(tournament)
+    except Exception as e:
+        messages.error(request, message=str(e))
+        return HttpResponseRedirect(reverse('tournament_manage'))
+
+    return JsonResponse("OK", safe=False)
