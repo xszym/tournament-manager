@@ -1,0 +1,113 @@
+{% extends "tournament/base.html" %}
+
+{% block title %}Tournament App - Match details - {{object.name}}{% endblock %}
+
+{% load static %}
+
+{% block content %}
+
+<div class="card text-center">
+  <div class="card-header">
+    <h1 class="text-center m-2 mb-4 display-5">{{object.tournament.name}} - Match {{object.match_number}}</h1>
+  </div>
+  <a type="button" class="btn btn-info btn-block" href="{% url 'tournament_details' object.tournament.slug %}">Go back to tournament</a>
+
+  <div class="card-body">
+      <div class="row">
+      <div class="col">
+        <div class="align-items-center row">
+          <div class="col"></div>
+          <ul class="list-group list-group col">
+            <li class="list-group-item active"><h3>{{object.team_A.name}}</h3></li>
+            {% for member in object.team_A.members.all %}
+              <li class="list-group-item">{{member}}</li>
+            {% endfor %}
+          </ul>
+          <div class="col"></div>
+        </div>
+        <h1 id="team_A_score" class="card-title">Score: {{object.team_A_score}}</h1>
+        {% if not object.is_end %}
+            <input id="team_A_score_input" type="number" id="tentacles" name="tentacles" value="{{object.team_A_score}}">
+        {% endif %}
+        </div>
+      <div class="col-md-auto"><table style="height: 100%;">
+        <tbody>
+          <tr>
+            <td class="align-middle h1">VS</td>
+          </tr>
+        </tbody>
+      </table></div>
+      <div class="col">
+        <div class="align-items-center row">
+          <div class="col"></div>
+          <ul class="list-group list-group col">
+            <li class="list-group-item active"><h3>{{object.team_B.name}}</h3></li>
+            {% for member in object.team_B.members.all %}
+              <li class="list-group-item">{{member}}</li>
+            {% endfor %}
+          </ul>
+          <div class="col"></div>
+        </div>
+        <h1 id="team_B_score" class="card-title">Score: {{object.team_B_score}}</h1>
+        {% if not object.is_end %}
+            <input id="team_B_score_input" type="number" id="tentacles" name="tentacles" value="{{object.team_B_score}}">
+        {% endif %}
+
+      </div>
+    </div>
+    </div>
+    {% if is_referee and not object.is_end %}
+        <a type="button" class="btn btn-danger btn-block" href="{% url 'match_accept_score' object.slug %}">Accept score</a>
+    {% endif %}
+  </div>
+
+  <div class="card-footer text-muted">
+    <ul class="list-group my-2">
+      <li class="list-group-item bg-light"><span class="text-muted">Location: </span><span class="fw-bold">{{object.tournament.location}}</span></li>
+      <li class="list-group-item bg-light"><span class="text-muted">Date: </span><span class="fw-bold">{{object.tournament.start_date}} - {{object.tournament.end_date}}</span></li>
+      <li class="list-group-item bg-light"><span class="text-muted">Elimination: </span><span class="fw-bold">{{object.type_of_elimination}}</span></li>
+    </ul>
+  </div>
+</div>
+
+<script>
+    const chatSocket = new WebSocket(
+            'ws://'
+            + window.location.host
+            + '/ws/updateScore/' 
+            + "{{ object.pk }}" + '/'
+    );
+
+    document.querySelector('#team_B_score_input').onchange = function(e) {
+        var teamBscore = document.querySelector('#team_B_score_input').value;
+        chatSocket.send(JSON.stringify({
+            'teamB_score': teamBscore
+        }));
+    };
+
+    document.querySelector('#team_A_score_input').onchange = function(e) {
+        var teamAscore = document.querySelector('#team_A_score_input').value;
+        chatSocket.send(JSON.stringify({
+            'teamA_score': teamAscore
+        }));
+    };
+
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        if (data.teamB_score){
+            document.querySelector("[id='team_B_score']").innerHTML = "Score: " + (data.teamB_score);
+            document.querySelector("[id='team_B_score_input']").value = (data.teamB_score);
+        } else if (data.teamA_score){
+            document.querySelector("[id='team_A_score']").innerHTML = "Score: " + (data.teamA_score);
+            document.querySelector("[id='team_A_score_input']").value = (data.teamA_score);
+        }
+    };
+
+    chatSocket.onclose = function(e) {
+        console.error('Chat socket closed unexpectedly');
+    };
+
+</script>
+
+
+{% endblock content %}

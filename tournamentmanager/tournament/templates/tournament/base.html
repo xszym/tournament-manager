@@ -18,13 +18,25 @@
             <a class="nav-link active" aria-current="page" href="{% url 'home' %}">Home</a>
           </li>
           <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            <a class="nav-link dropdown-toggle" id="navbarDropdownMenuLinkTournament" role="button" data-bs-toggle="dropdown" aria-expanded="false">
               Tournament
             </a>
-            <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+            <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLinkTournament">
               <li><a class="dropdown-item" href="{% url 'create_tournament' %}">Create</a></li>
-              <li><a class="dropdown-item" href="{% url 'home' %}">Another action</a></li>
-              <li><a class="dropdown-item" href="{% url 'home' %}">Something else here</a></li>
+              <li><a class="dropdown-item" href="{% url 'tournaments_list' %}">All tournaments</a></li>
+              <li><a class="dropdown-item" href="{% url 'team_tournament_request' %}">Register to tournament</a></li>
+              <li><a class="dropdown-item" href="{% url 'tournament_manage' %}">Manage your tournament</a></li>
+            </ul>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" id="navbarDropdownMenuLinkTeam" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Team
+            </a>
+            <ul class="dropdown-menu" aria-labelledby="navbarDropdownMenuLinkTeam">
+              <li><a class="dropdown-item" href="{% url 'create_team' %}">Create</a></li>
+              {% if user.is_authenticated %}
+              <li><a class="dropdown-item" href="{% url 'teams_list' %}">Your teams</a></li>
+              {% endif %}
             </ul>
           </li>
         </ul>
@@ -32,6 +44,9 @@
       <div class="nav navbar-nav navbar-right">
         <ul class="navbar-nav ml-auto">
           {% if user.is_authenticated %}
+          <li class="nav-item">
+            <span class="nav-link"><span class="text-muted">Hi, </span><span class="text-primary">{{user}}</span><span class="text-muted">!</span></span>
+          </li>
           <li class="nav-item">
             <a class="nav-link" href="{% url 'logout' %}">Logout</a>
           </li>
@@ -42,16 +57,16 @@
           <li class="nav-item">
             <a class="nav-link" href="{% url 'register' %}">Register</a>
           {% endif %}
-          </li>
-        </ul>
-      </div>
+        </li>
+      </ul>
     </div>
-  </nav>
+  </div>
+</nav>
 
 <div class="container">
-    {% autoescape off %}{% bootstrap_messages %}{% endautoescape %}
+  {% autoescape off %}{% bootstrap_messages %}{% endautoescape %}
 
-    {% block content %}(no content){% endblock %}
+  {% block content %}(no content){% endblock %}
 </div>
 
 {% endblock %}

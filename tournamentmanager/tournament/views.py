@@ -1,25 +1,29 @@
-from django.http import HttpResponse
+import math
+
+from django.http import HttpResponse, HttpResponseForbidden, HttpResponseRedirect, Http404, HttpResponse, HttpResponseNotFound, JsonResponse
 from django.contrib import messages
 from django.contrib.auth import forms as auth_forms
 from django.urls import reverse
-from django.views.generic import FormView
-from django.views.generic import CreateView
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import redirect, render
-from django.http.request import HttpRequest
-from django.views.generic import TemplateView
+from django.views import View
+from django.views.generic import CreateView, ListView, FormView, TemplateView, DetailView
+from django.shortcuts import redirect
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.paginator import Paginator
+from django.core.paginator import EmptyPage
+from django.core.paginator import PageNotAnInteger
+from django.shortcuts import get_object_or_404
 
-from .forms import CreateTournamentForms
-from .models import Tournament
-
+from .forms import CreateTeamForm, CreateTournamentForms, TeamTournamentRequestForm
+from .models import Game, Team, JoinRequestStatusType, TeamJoinRequest, Tournament, TeamTournamentRequest, Match, EliminationType
+from .helpers import slug_to_uuid, uuid_to_slug
+from .tournament_logic import generate_matches_for_tournament, accept_match_in_knockout_elemination
 
 class IndexView(TemplateView):
     template_name = 'tournament/home.html'
 
     def get_context_data(self, **kwargs):
         context = super(IndexView, self).get_context_data(**kwargs)
-        context['last_tournaments'] = Tournament.objects.order_by('-created')[:5]
+        context['last_tournaments'] = Tournament.objects.order_by('-created')[:3]
         return context
 
 
@@ -39,6 +43,320 @@ class CreateTournamentView(LoginRequiredMixin, CreateView):
     model = Tournament
     form_class = CreateTournamentForms
 
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        self.object.referee_list.add(self.request.user)
+        return response
+
     def get_success_url(self):
-        # return reverse('tournament-detail', kwargs={'pk': self.object.pk})
-        return reverse('home')
+        return self.object.url
+
+
+class CreateTeamView(LoginRequiredMixin, CreateView):
+    template_name_suffix = '_create_form'
+    model = Team
+    form_class = CreateTeamForm
+
+    def form_valid(self, form):
+        form.instance.team_manager = self.request.user
+        response = super().form_valid(form)
+        return response
+
+    def get_success_url(self):
+        return self.object.url
+
+
+class TournamentListView(ListView):
+    template_name = 'tournament/tournament_list.html'
+    paginate_by = 3
+
+    def get_context_data(self, **kwargs):
+        context = super(TournamentListView, self).get_context_data(**kwargs)
+
+        categories = Game.objects.all()
+        context['games'] = categories
+
+        tournaments_list = Tournament.objects.all()
+
+        game_val = self.request.GET.get('game', '')
+        if game_val != '':
+            tournaments_list = tournaments_list.filter(game__name=game_val)
+
+        name_val = self.request.GET.get('name', '')
+        if name_val != '':
+            tournaments_list = tournaments_list.filter(name__icontains=name_val)
+        page = self.request.GET.get('page')
+
+        paginator = Paginator(tournaments_list, self.paginate_by)
+        try:
+            tournaments_list = paginator.page(page)
+        except PageNotAnInteger:
+            tournaments_list = paginator.page(1)
+        except EmptyPage:
+            tournaments_list = paginator.page(paginator.num_pages)
+        context['tournaments'] = tournaments_list
+        return context
+
+    def get_queryset(self):
+        name_val = self.request.GET.get('name', '')
+        game_val = self.request.GET.get('game', '')
+
+        new_context = Tournament.objects.order_by('-created')
+        if game_val != '':
+            new_context = new_context.filter(game__name=game_val)
+
+        if name_val != '':
+            new_context = new_context.filter(name__icontains=name_val)
+
+        return new_context
+
+    def get_kwargs(self, arg_name):
+        try:
+            arg = self.kwargs[arg_name]
+            return arg
+        except:
+            return ''
+
+
+class TeamListView(LoginRequiredMixin, ListView):
+    template_name = 'tournament/team_list.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        teams_list = Team.objects.all()
+
+        teams_list_manager = teams_list.filter(team_manager=self.request.user)
+        teams_list_member = teams_list.filter(members__in=(self.request.user,))
+
+        context['teams_manager'] = teams_list_manager
+        context['teams_member'] = teams_list_member
+        return context
+
+    def get_queryset(self):
+        return Team.objects.all()
+
+
+class CreateTeamTournamentRequestView(LoginRequiredMixin, CreateView):
+    template_name_suffix = '_create_form'
+    model = TeamTournamentRequest
+    form_class = TeamTournamentRequestForm
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        self.object.status = JoinRequestStatusType.PENDING
+        return response
+
+    def get_success_url(self):
+        return self.object.tournament.url
+
+    def get_form_kwargs(self, **kwargs):
+        form_kwargs = super(CreateTeamTournamentRequestView, self).get_form_kwargs(**kwargs)
+        form_kwargs["user"] = self.request.user
+        return form_kwargs
+
+class TournamentManageView(LoginRequiredMixin, ListView):
+    template_name = 'tournament/tournament_manage.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        tournaments = Tournament.objects.filter(referee_list=self.request.user)
+
+        context['tournaments'] = []
+
+        for tournament in tournaments:
+            request_list = TeamTournamentRequest.objects.all()
+            request_list = request_list.filter(tournament=tournament.pk)
+            context['tournaments'].append([tournament, request_list])
+
+        return context
+
+    def get_queryset(self):
+        return Team.objects.all()
+
+
+def change_TeamTournamentRequest_status(request, request_id, new_status):
+    teamTournamentRequest = get_object_or_404(TeamTournamentRequest, pk=request_id)
+    matches = list(Match.objects.filter(tournament=teamTournamentRequest.tournament))
+    if len(matches) > 0:
+        messages.error(request, message=str("You have matches in this tournament"))
+        return HttpResponseRedirect(reverse('tournament_manage'))
+
+    try:
+        teamTournamentRequest.status = JoinRequestStatusType(new_status).name
+        if teamTournamentRequest.status == JoinRequestStatusType.ACCEPTED.name:
+            teamTournamentRequest.tournament.team_list.add(teamTournamentRequest.team)
+        else:
+            teamTournamentRequest.tournament.team_list.remove(teamTournamentRequest.team)
+
+        teamTournamentRequest.save()
+
+    except (KeyError, teamTournamentRequest.DoesNotExist) as e:
+        # Redisplay the question voting form.
+        messages.error(teamTournamentRequest, message=str(e))
+        return reverse('tournament_manage')
+        
+    return HttpResponseRedirect(reverse('tournament_manage'))
+
+
+class RequestTeamJoinView(LoginRequiredMixin, View):
+
+    def get(self, request, *args, **kwargs):
+        slug = kwargs['slug']
+        uuid = slug_to_uuid(slug)
+        team = Team.objects.get(pk=uuid)
+        if team is None:
+            return HttpResponseNotFound()
+        join = TeamJoinRequest(team=team, user=request.user)
+        join.save()
+        return redirect(team.url)
+
+
+class TeamDetailsView(DetailView):
+    model = Team
+
+    def get_object(self, queryset = None):
+        try:
+            self.kwargs['pk'] = slug_to_uuid(self.kwargs.get('slug'))
+            return super().get_object(queryset)
+        except ValueError:
+            raise Http404('Invalid team id format')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        if self.request.user.is_anonymous:
+            return context
+
+        if self.object.team_manager == self.request.user:
+            context['is_manager'] = True
+            context['requests'] = TeamJoinRequest.objects.filter(team=self.object, status=JoinRequestStatusType.PENDING.name)
+        else:
+            context['is_manager'] = False
+
+        if self.request.user in self.object.members.all():
+            context['is_member'] = True
+        else:
+            context['is_member'] = False
+            context['request'] = TeamJoinRequest.objects.filter(user=self.request.user, team=self.object).first()
+
+        return context
+
+class TournamentDetailsView(DetailView):
+    model = Tournament
+
+    def get_object(self, queryset = None):
+        try:
+            self.kwargs['pk'] = slug_to_uuid(self.kwargs.get('slug'))
+            return super().get_object(queryset)
+        except ValueError:
+            raise Http404('Invalid tournament id format')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        matches = list(Match.objects.filter(tournament=self.object))
+        rounds = [[] for _ in range(int(math.log2(len(matches)+1)))]
+        if len(matches) > 0:
+            matches.sort(key=lambda x: x.match_number)
+            context['final'] = matches[0]
+            for index, match in enumerate(matches):
+                round = int(math.log2(index+1))
+                rounds[round].append(match)
+
+            rounds.reverse()
+        context['rounds'] = rounds
+        return context
+        
+class MatchDetailsView(DetailView):
+    model = Match
+
+    def get_object(self, queryset = None):
+        try:
+            self.kwargs['pk'] = slug_to_uuid(self.kwargs.get('slug'))
+            return super().get_object(queryset)
+        except ValueError:
+            raise Http404('Invalid match id format')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        if self.request.user.is_anonymous:
+            return context
+
+        context['is_referee'] = self.request.user in list(self.object.tournament.referee_list.all())
+
+        return context
+
+
+def change_JoinTeamRequest_status(request, request_id, new_status):
+    o = get_object_or_404(TeamJoinRequest, pk=request_id)
+    if request.user != o.team.team_manager:
+        return HttpResponseForbidden()
+    request = get_object_or_404(TeamJoinRequest, pk=request_id)
+    try:
+        request.status = JoinRequestStatusType(new_status).name
+        if request.status == JoinRequestStatusType.ACCEPTED.name:
+            request.team.members.add(request.user)
+        else:
+            request.team.members.remove(request.user)
+        request.save()
+    except (KeyError, request.DoesNotExist):
+        return HttpResponseRedirect(reverse('team_details', kwargs={'slug': uuid_to_slug(request.team.id)}))
+    return HttpResponseRedirect(reverse('team_details', kwargs={'slug': uuid_to_slug(request.team.id)}))
+
+
+def generate_matches(request, slug):
+    tournament = get_object_or_404(Tournament, pk=slug_to_uuid(slug))
+    if tournament.referee_list.filter(pk=request.user.pk).count() == 0:
+        return HttpResponseForbidden()
+    if len(Match.objects.filter(tournament=tournament)) > 0:
+        messages.error(request, message=str("Tournament already has matches"))
+        return HttpResponseRedirect(reverse('tournament_manage'))
+
+    try:
+        matches = generate_matches_for_tournament(tournament)
+        [m.save() for m in matches]
+    except Exception as e:
+        messages.error(request, message=str(e))
+        return HttpResponseRedirect(reverse('tournament_manage'))
+    return HttpResponseRedirect(reverse('tournament_details', kwargs={'slug':tournament.slug}))
+
+
+def remove_all_matches_for_tournament(request, slug):
+    tournament = get_object_or_404(Tournament, pk=slug_to_uuid(slug))
+    if tournament.referee_list.filter(pk=request.user.pk).count() == 0:
+        return HttpResponseForbidden()
+    if len(Match.objects.filter(tournament=tournament)) == 0:
+        messages.error(request, message=str("Tournament does not has matches"))
+        return HttpResponseRedirect(reverse('tournament_manage'))
+    Match.objects.filter(tournament=tournament).delete()
+    messages.info(request, message=str("Matches from tournament removed"))
+
+    return HttpResponseRedirect(reverse('tournament_manage'))
+
+
+def accept_match_score(request, slug):
+    match = get_object_or_404(Match, pk=slug_to_uuid(slug))
+    if match.tournament.referee_list.filter(pk=request.user.pk).count() == 0:
+        messages.error(request, message=str("Access forbidden"))
+        return HttpResponseRedirect(reverse('tournament_details', kwargs={'slug':match.tournament.slug}))
+    if match.is_end:
+        messages.error(request, message=str("Match is already finished"))
+        return HttpResponseRedirect(reverse('tournament_details', kwargs={'slug':match.tournament.slug}))
+    
+    if match.team_A == None or match.team_B == None:
+        messages.error(request, message=str("There has to be two teams to play a match"))
+        return HttpResponseRedirect(reverse('match_details', kwargs={'slug':match.slug}))
+
+    if match.tournament.type_of_elimination == EliminationType.KNOCKOUT.name:
+        if match.team_A_score == match.team_B_score:
+            messages.error(request, message=str("Scores are the same"))
+            return HttpResponseRedirect(reverse('match_details', kwargs={'slug': uuid_to_slug(match.id)}))
+        accept_match_in_knockout_elemination(match)
+    else:
+        messages.info(request, message=str("Not implemented"))
+    
+    messages.info(request, message=str("Match score accepted"))
+    return HttpResponseRedirect(reverse('match_details', kwargs={'slug':match.slug}))

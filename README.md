@@ -21,26 +21,30 @@ Game np. tenis, siatkówka, League of legends
     name (str)
 
 Drużyna
+
 - Zarządca drużyny (użytkownik)
 - Nazwa (str)
 - Lista członków drużyny ()
 
 Zgłoszenie
+
 - Nazwa drużyny (Drużyna)
 - Nazwa turnieju (Tournament)
 - Czy zaakceptowana (bool)
 
 Tournament
+
 - Nazwa (str)
 - miejsce (str)
-- Data startu turneju
-- Data konca tr
+- Data startu turnieju
+- Data końca turnieju
 - forma rozgrywek np.(fazy grupowe / drabinka / faza grupowa + drabinka) (enum)
-- domyslny czas meczu (opcional, time?)
+- domyślny czas meczu (optional, time?)
 - Lista sędziów Referee (użytkowników)
-- Lista druzyn 
+- Lista drużyn
 
 Mecz
+
 - Drużyna A (Drużyna)
 - Drużyna B (Drużyna)
 - Wynik druzyny A (wynik)
@@ -51,45 +55,48 @@ Mecz
 get_winner()
 
 Wynik
+
 - Wartość wyniku (float)
 - czy wynik zatwierdzony przez sędziego (bool)
 
+## TODO:
 
-# TODO:
-- [ ] Logowanie sie 
-- [ ] Rejstracja 
-- [ ] 
+- [ ] Logowanie sie
+- [ ] Rejestracja
 
-
-# Strony
+## Strony
 
 ## MVP v0
- - Strona do logowania
- - Strona do rejstracji 
- - Strona Glowna
-    - przyciski zaloguj sie / zarejstr3,uj lub wyloguj sie (base_template)
+
+- Strona do logowania
+- Strona do rejestracji
+- Strona Główna
+  - przyciski zaloguj sie / zarejestruj lub wyloguj się (base_template)
 
 ## MVP v1
-    Dla zalogowanych:
-    1. Zalogować
-    2. Różne opcje działań
-        - Stworzenie drużyny
-        - Dołączanie do drużyny
-        - Stworzenie turnieju
-        - Zgłaszanie drużyny do turnieju
-    3. Modele potrzebne:
-        - Użytkownik
-        - Drużyna
-        - Turniej
-        - Sport
-    4. Strona glowna 
-        - Lista turniejow przyszlych obecnych przeszlych
+
+Dla zalogowanych:
+
+1. Zalogować
+2. Różne opcje działań
+   - Stworzenie drużyny
+   - Dołączanie do drużyny
+   - Stworzenie turnieju
+   - Zgłaszanie drużyny do turnieju
+3. Modele potrzebne:
+   - Użytkownik
+   - Drużyna
+   - Turniej
+   - Sport
+4. Strona główna
+   - Lista turniejów przyszłych obecnych przeszłych
 
 ## MVP v2
+
     1. Generowanie drabinki itp.
 
+## Commands
 
-# Commands
 - `docker-compose exec web python3 manage.py startapp app_name`
 - `docker-compose exec web python manage.py createsuperuser`
 - `docker-compose exec web python manage.py makemigrations`

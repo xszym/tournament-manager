@@ -1,0 +1,71 @@
+{% extends "tournament/base.html" %}
+
+{% block title %}Tournament App - Team details - {{object.name}}{% endblock %}
+
+{% load static %}
+
+{% block content %}
+<h1 class="text-center m-2 mb-4 display-5">{{object.name}}</h1>
+
+<div class="d-flex justify-content-center">
+    <ul class="list-group list-group w-50">
+        <li class="list-group-item active">
+          <div class="ms-2 me-auto">
+            <div class="fw-bold text-center">{{object.team_manager}}</div>
+            <div class="text-center"><span class="badge bg-light text-dark rounded-pill">Manager</span></div>
+          </div>
+        </li>
+    {% for member in object.members.all %}
+        <li class="list-group-item">
+            <div class="ms-2 me-auto">
+                <div class="fw-bold text-center">{{member}}</div>
+                <div class="text-center"><span class="badge bg-primary rounded-pill">Member</span></div>
+            </div>
+        </li>
+    {% endfor %}
+    {% if is_manager %}
+    <li class="list-group-item">
+      <div class="accordion">
+        <div class="accordion-item">
+          <h2 class="accordion-header" id="panelsStayOpen-headingOne">
+            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseOne" aria-expanded="true" aria-controls="panelsStayOpen-collapseOne">
+              <span class="badge bg-secondary mx-2">{{requests.count}}</span>Pending requests to join:
+            </button>
+          </h2>
+          <div id="panelsStayOpen-collapseOne" class="accordion-collapse collapse show" aria-labelledby="panelsStayOpen-headingOne">
+            <div class="accordion-body">
+              <div class="list-group">
+                {% for request in requests %}
+                <div class="list-group-item list-group-item-action list-group-item-secondary d-flex">
+                  {{ request.user }}
+                  <a class="mx-1" href="{{ request.accept_url }}"><span class="badge bg-success">ACCEPT</span></a>
+                  <a class="mx-1" href="{{ request.reject_url }}"><span class="badge bg-danger">REJECT</span></a>
+                </div>
+                {% empty %}
+                <div class="alert alert-light" role="alert">None</div>
+                {% endfor %}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </li>
+    {% endif %}
+    </ul>
+</div>
+
+{% if not is_member %}
+    {% if request %}
+        {% if request.is_accepted %}
+        <div class="text-center my-2"><span class="badge bg-success rounded-pill">Your request ACCEPTED</span></div>
+        {% elif request.is_rejected %}
+        <div class="text-center my-2"><span class="badge bg-danger rounded-pill">Your request REJECTED</span></div>
+        {% else %}
+        <div class="text-center my-2"><span class="badge bg-secondary rounded-pill">Your request PENDING</span></div>
+        {% endif %}
+    {% else %}
+      <div class="text-center my-2"><a href="{{object.join_url}}" class="text-center"><span class="badge bg-secondary">Request to join as member</span></a></div>
+    {% endif %}
+{% endif %}
+
+{% endblock content %}

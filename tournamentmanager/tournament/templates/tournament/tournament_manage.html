@@ -1,0 +1,64 @@
+{% extends "tournament/base.html" %}
+
+{% block title %}Tournament Manage{% endblock %}
+
+{% load static %}
+
+{% block content %}
+<h1 class="text-center m-2 mb-4 display-5">Your tournaments</h1>
+
+<div class="accordion" id="accordionPanelsStayOpenExample">
+  {% for tournament, request_list in tournaments %}
+  <div class="accordion-item">
+    <h2 class="accordion-header" id="panelsStayOpen-headingOne-{{tournament.id}}">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#panelsStayOpen-collapseOne-{{tournament.id}}" aria-expanded="false" aria-controls="panelsStayOpen-collapseOne-{{tournament.id}}">
+        {{ tournament.name }}  ({{ tournament.team_list.count }} registered {% if tournament.team_list.count < 2 %} team{% else %} teams{% endif %})
+      </button>
+    </h2>
+    <div id="panelsStayOpen-collapseOne-{{tournament.id}}" class="accordion-collapse collapse" aria-labelledby="panelsStayOpen-headingOne-{{tournament.id}}" style="margin-bottom: 10px;">
+      <div class="accordion-body">
+        <div class="list-group">
+          {% for request in request_list %}
+          <div class="list-group-item list-group-item-action list-group-item-secondary d-flex">
+            <a class="text-decoration-none fw-bolder" href="{{request.team.url}}"> {{ request.team.name }} </a>
+            {% if request.status == "PENDING" %}
+            {% if not tournament.has_matches %}
+            <a class="mx-1" href="{% url 'change_TeamTournamentRequest_status' request.id 'ACCEPTED' %}"><span class="badge bg-success">ACCEPT</span></a>
+            <a class="mx-1" href="{% url 'change_TeamTournamentRequest_status' request.id 'REJECTED' %}"><span class="badge bg-danger">REJECT</span></a>
+            {% endif %}
+            <span class="badge bg-secondary rounded-pill ms-auto"> PENDING </span>
+            {% elif request.status == "ACCEPTED" %}
+            {% if not tournament.has_matches %}
+              <a class="mx-1" href="{% url 'change_TeamTournamentRequest_status' request.id 'REJECTED' %}"><small class="text-muted"><span class="badge bg-danger">REMOVE</span></small></a>
+              <a class="mx-1" href="{% url 'change_TeamTournamentRequest_status' request.id 'PENDING' %}"><small class="text-muted"><span class="badge bg-secondary">RESTORE PENDING</span></small></a>
+            {% endif %}
+              <span class="badge bg-success rounded-pill ms-auto">ACCEPTED</span>
+            {% elif request.status == "REJECTED" %}
+            {% if not tournament.has_matches %}
+              <a class="mx-1" href="{% url 'change_TeamTournamentRequest_status' request.id 'ACCEPTED' %}"><small class="text-muted"><span class="badge bg-success">ADD</span></small></a>
+              <a class="mx-1" href="{% url 'change_TeamTournamentRequest_status' request.id 'PENDING' %}"><small class="text-muted"><span class="badge bg-secondary">RESTORE PENDING</span></small></a>
+            {% endif %}
+              <span class="badge bg-danger rounded-pill ms-auto">REJECTED</span>
+            {% endif %}
+          </div>
+          {% empty %}
+          <div class="alert alert-light" role="alert">No requests</div>
+          {% endfor %}
+        </div>
+      </div>
+      <div >
+        {% if tournament.has_matches %}
+          <a type="button" class="btn btn-danger btn-block" href="{% url 'remove_matches' tournament.slug %}">Remove all matches</a>
+        {% else %}
+          <a type="button" class="btn btn-primary btn-block" href="{% url 'generate_matches' tournament.slug %}">Generate matches</a>
+        {% endif %}
+        <a type="button" class="btn btn-success btn-block" href="{% url 'tournament_details' tournament.slug %}">See tournament details</a>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+
+
+</div>
+
+{% endblock content %}

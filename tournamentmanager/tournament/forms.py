@@ -1,6 +1,6 @@
 from django import forms
 
-from .models import Tournament
+from .models import Team, Tournament, TeamTournamentRequest
 
 
 class LoginForm(forms.Form):
@@ -39,3 +39,19 @@ class CreateTournamentForms(forms.ModelForm):
             'start_date': DateInput(attrs={'class': 'form-control'}),
             'end_date': DateInput(attrs={'class': 'form-control'}),
         }
+
+class CreateTeamForm(forms.ModelForm):
+    class Meta:
+        model = Team
+        fields = ['name']
+
+
+class TeamTournamentRequestForm(forms.ModelForm):
+    class Meta:
+        model = TeamTournamentRequest
+        fields = ['tournament', 'team']
+
+    def __init__(self, **kwargs):
+        user = kwargs.pop('user', None)
+        super(TeamTournamentRequestForm, self).__init__(**kwargs)
+        self.fields['team'].queryset = Team.objects.filter(team_manager=user.pk)
