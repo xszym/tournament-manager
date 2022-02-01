@@ -285,7 +285,7 @@ class MatchDetailsView(DetailView):
         if self.request.user.is_anonymous:
             return context
 
-        context['is_referee'] = self.request.user in list(self.object.tournament.referee_list.all())
+        context['is_referee'] = self.object.tournament.referee_list.filter(pk=self.request.user.pk).count() > 0
 
         return context
 
