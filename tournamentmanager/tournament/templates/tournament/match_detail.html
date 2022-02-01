@@ -27,7 +27,9 @@
         </div>
         <h1 id="team_A_score" class="card-title">Score: {{object.team_A_score}}</h1>
         {% if is_referee and not object.is_end and object.are_two_teams %}
-            <input id="team_A_score_input" type="number" id="tentacles" name="tentacles" value="{{object.team_A_score}}">
+        <div class="d-flex justify-content-center">
+          <input id="team_A_score_input" type="number" style="width:100px;" class="form-control" value="{{object.team_A_score}}">
+        </div>
         {% endif %}
         </div>
       <div class="col-md-auto"><table style="height: 100%;">
@@ -50,7 +52,9 @@
         </div>
         <h1 id="team_B_score" class="card-title">Score: {{object.team_B_score}}</h1>
         {% if is_referee and not object.is_end and object.are_two_teams %}
-            <input id="team_B_score_input" type="number" id="tentacles" name="tentacles" value="{{object.team_B_score}}">
+        <div class="d-flex justify-content-center">
+            <input id="team_B_score_input" type="number" style="width:100px;" class="form-control" value="{{object.team_B_score}}">
+        </div>
         {% endif %}
 
       </div>
@@ -65,7 +69,7 @@
     <ul class="list-group my-2">
       <li class="list-group-item bg-light"><span class="text-muted">Location: </span><span class="fw-bold">{{object.tournament.location}}</span></li>
       <li class="list-group-item bg-light"><span class="text-muted">Date: </span><span class="fw-bold">{{object.tournament.start_date}} - {{object.tournament.end_date}}</span></li>
-      <li class="list-group-item bg-light"><span class="text-muted">Elimination: </span><span class="fw-bold">{{object.type_of_elimination}}</span></li>
+      <li class="list-group-item bg-light"><span class="text-muted">Elimination: </span><span class="fw-bold">{{object.tournament.type_of_elimination}}</span></li>
     </ul>
   </div>
 </div>
