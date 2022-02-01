@@ -26,7 +26,7 @@
           <div class="col"></div>
         </div>
         <h1 id="team_A_score" class="card-title">Score: {{object.team_A_score}}</h1>
-        {% if not object.is_end %}
+        {% if is_referee and not object.is_end %}
             <input id="team_A_score_input" type="number" id="tentacles" name="tentacles" value="{{object.team_A_score}}">
         {% endif %}
         </div>
@@ -49,7 +49,7 @@
           <div class="col"></div>
         </div>
         <h1 id="team_B_score" class="card-title">Score: {{object.team_B_score}}</h1>
-        {% if not object.is_end %}
+        {% if is_referee and not object.is_end %}
             <input id="team_B_score_input" type="number" id="tentacles" name="tentacles" value="{{object.team_B_score}}">
         {% endif %}
 
@@ -70,36 +70,48 @@
   </div>
 </div>
 
+{% if not object.is_end %}
+
 <script>
     const chatSocket = new WebSocket(
             'ws://'
             + window.location.host
-            + '/ws/updateScore/' 
+            + '/ws/updateScore/'
             + "{{ object.pk }}" + '/'
     );
 
-    document.querySelector('#team_B_score_input').onchange = function(e) {
-        var teamBscore = document.querySelector('#team_B_score_input').value;
-        chatSocket.send(JSON.stringify({
-            'teamB_score': teamBscore
-        }));
-    };
+    const team_B_score_input = document.querySelector('#team_B_score_input');
+    if(team_B_score_input) {
+      team_B_score_input.onchange = function(e) {
+          let teamBscore = team_B_score_input.value;
+          chatSocket.send(JSON.stringify({
+              'teamB_score': teamBscore
+          }));
+      };
+    }
 
-    document.querySelector('#team_A_score_input').onchange = function(e) {
-        var teamAscore = document.querySelector('#team_A_score_input').value;
-        chatSocket.send(JSON.stringify({
-            'teamA_score': teamAscore
-        }));
-    };
+    const team_A_score_input = document.querySelector('#team_A_score_input');
+    if(team_A_score_input) {
+      team_A_score_input.onchange = function(e) {
+          let teamAscore = team_A_score_input.value;
+          chatSocket.send(JSON.stringify({
+              'teamA_score': teamAscore
+          }));
+      };
+    }
 
     chatSocket.onmessage = function(e) {
         const data = JSON.parse(e.data);
         if (data.teamB_score){
-            document.querySelector("[id='team_B_score']").innerHTML = "Score: " + (data.teamB_score);
-            document.querySelector("[id='team_B_score_input']").value = (data.teamB_score);
+            document.querySelector('#team_B_score').innerHTML = 'Score: ' + (data.teamB_score);
+            if(team_B_score_input) {
+              team_B_score_input.value = (data.teamB_score);
+            }
         } else if (data.teamA_score){
-            document.querySelector("[id='team_A_score']").innerHTML = "Score: " + (data.teamA_score);
-            document.querySelector("[id='team_A_score_input']").value = (data.teamA_score);
+            document.querySelector('#team_A_score').innerHTML = 'Score: ' + (data.teamA_score);
+            if(team_A_score_input) {
+              team_A_score_input.value = (data.teamA_score);
+            }
         }
     };
 
@@ -109,5 +121,6 @@
 
 </script>
 
+{% endif %}
 
 {% endblock content %}
