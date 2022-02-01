@@ -26,7 +26,7 @@
           <div class="col"></div>
         </div>
         <h1 id="team_A_score" class="card-title">Score: {{object.team_A_score}}</h1>
-        {% if is_referee and not object.is_end %}
+        {% if is_referee and not object.is_end and object.are_two_teams %}
             <input id="team_A_score_input" type="number" id="tentacles" name="tentacles" value="{{object.team_A_score}}">
         {% endif %}
         </div>
@@ -49,14 +49,14 @@
           <div class="col"></div>
         </div>
         <h1 id="team_B_score" class="card-title">Score: {{object.team_B_score}}</h1>
-        {% if is_referee and not object.is_end %}
+        {% if is_referee and not object.is_end and object.are_two_teams %}
             <input id="team_B_score_input" type="number" id="tentacles" name="tentacles" value="{{object.team_B_score}}">
         {% endif %}
 
       </div>
     </div>
     </div>
-    {% if is_referee and not object.is_end %}
+    {% if is_referee and not object.is_end and object.are_two_teams %}
         <a type="button" class="btn btn-danger btn-block" href="{% url 'match_accept_score' object.slug %}">Accept score</a>
     {% endif %}
   </div>

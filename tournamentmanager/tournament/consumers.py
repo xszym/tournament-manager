@@ -18,7 +18,10 @@ class ScoreUpdateConsumer(WebsocketConsumer):
             self.channel_name
         )
 
+        
         if self.match.tournament.referee_list.filter(pk=self.user.pk).count() == 0:
+            self.close()
+        elif self.match.team_A == None or self.match.team_B == None:
             self.close()
         else:
             self.accept()

@@ -99,6 +99,11 @@ class Match(models.Model):
     @property
     def slug(self):
         return uuid_to_slug(self.id)
+
+    @property
+    def are_two_teams(self):
+        return self.team_A and self.team_B
+        
         
     def __str__(self):
         return '%s | Match %d | %s (%d) vs %s (%d)' % (self.tournament.name, self.match_number, self.team_A, self.team_A_score, self.team_B, self.team_B_score)
