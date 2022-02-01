@@ -37,7 +37,6 @@
               {% if user.is_authenticated %}
               <li><a class="dropdown-item" href="{% url 'teams_list' %}">Your teams</a></li>
               {% endif %}
-              <li><a class="dropdown-item" href="{% url 'home' %}">Something else here</a></li>
             </ul>
           </li>
         </ul>
@@ -45,6 +44,9 @@
       <div class="nav navbar-nav navbar-right">
         <ul class="navbar-nav ml-auto">
           {% if user.is_authenticated %}
+          <li class="nav-item">
+            <span class="nav-link"><span class="text-muted">Hi, </span><span class="text-primary">{{user}}</span><span class="text-muted">!</span></span>
+          </li>
           <li class="nav-item">
             <a class="nav-link" href="{% url 'logout' %}">Logout</a>
           </li>

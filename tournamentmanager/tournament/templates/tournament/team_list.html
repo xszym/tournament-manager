@@ -48,15 +48,15 @@
           <a href="{{team.url}}" class="list-group-item list-group-item-action list-group-item-secondary d-flex justify-content-between align-items-center">
             {{team.name}}
             {% if team.members.count == 0 %}
-            <span class="badge bg-secondary rounded-pill">No team members</span>
+              <span class="badge bg-secondary rounded-pill">No team members</span>
             {% elif team.members.count == 1 %}
-            <span class="badge bg-primary rounded-pill">1 team member</span>
+              <span class="badge bg-primary rounded-pill">1 team member</span>
             {% else %}
-            <span class="badge bg-primary rounded-pill">{{team.members.count}} team members</span>
+              <span class="badge bg-primary rounded-pill">{{team.members.count}} team members</span>
             {% endif %}
           </a>
           {% empty %}
-          <div class="alert alert-light m-0" role="alert">Not found</div>
+            <div class="alert alert-light m-0" role="alert">Not found</div>
           {% endfor %}
         </div>
       </div>

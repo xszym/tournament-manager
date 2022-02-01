@@ -5,6 +5,7 @@
 {% load static %}
 
 {% block content %}
+<link rel="stylesheet" href="{% static 'styles/bracket.css' %}">
 
 <div class="card text-center">
   <div class="card-header">
@@ -55,6 +56,7 @@
       </div>
     </div>
   </div>
+
   <div class="card-footer text-muted">
     <ul class="list-group my-2">
       <li class="list-group-item bg-light"><span class="text-muted">Location: </span><span class="fw-bold">{{object.location}}</span></li>
@@ -64,4 +66,40 @@
   </div>
 </div>
 
+{% if object.type_of_elimination == "KNOCKOUT" %}
+<div class="container">
+  <div class="row justify-content-md-center">
+    <div class="col-md-auto">
+      <main id="tournament">
+        {% for round in rounds %}
+        <ul class="round">
+          {% for match in round %}
+            <li class="spacer">&nbsp;</li>
+            {% if match.winner_team == match.team_A %}
+              <a href="{{match.url}}" class="text-decoration-none" ><li class="game game-top winner">{% if match.team_A %}{{ match.team_A }} <span>{{match.team_A_score}}</span>{% endif %}</li></a>
+              <li class="game game-spacer">&nbsp;</li>
+              <a href="{{match.url}}" class="text-decoration-none"><li class="game game-bottom ">{% if match.team_B %}{{ match.team_B }} <span>{{match.team_B_score}}</span>{% endif %}</li></a>
+            {% elif match.winner_team == match.team_B %}
+              <a href="{{match.url}}" class="text-decoration-none"><li class="game game-top ">{% if match.team_A %}{{ match.team_A }} <span>{{match.team_A_score}}</span>{% endif %}</li></a>
+              <li class="game game-spacer">&nbsp;</li>
+              <a href="{{match.url}}" class="text-decoration-none"><li class="game game-bottom winner">{% if match.team_B %}{{ match.team_B }} <span>{{match.team_B_score}}</span>{% endif %}</li></a>
+            {% else %}
+              <a href="{{match.url}}" class="text-decoration-none"><li class="game game-top ">{% if match.team_A %}{{ match.team_A }} <span>{{match.team_A_score}}</span>{% endif %}</li></a>
+              <li class="game game-spacer">&nbsp;</li>
+              <a href="{{match.url}}" class="text-decoration-none"><li class="game game-bottom ">{% if match.team_B %}{{ match.team_B }} <span>{{match.team_B_score}}</span>{% endif %}</li></a>
+            {% endif %}
+          {% endfor %}
+          <li class="spacer">&nbsp;</li>
+        </ul>
+        {% endfor %}
+      </main>
+    </div>
+    <div class="col col-lg-2 align-self-center h3">
+      {% if final.winner_team %}
+      <a href="{{final.winner_team.url}}"><span class="badge rounded-pill bg-warning text-dark">{{ final.winner_team }}</span></a>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endif %}
 {% endblock content %}

@@ -23,3 +23,5 @@ services:
       - .env.dev
     depends_on:
       - database
+  redis:
+    image: "redis:alpine"

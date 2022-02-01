@@ -28,6 +28,10 @@ class Team(models.Model):
     def url(self):
         slug = uuid_to_slug(self.id)
         return reverse('team_details', kwargs={'slug':slug})
+    
+    @property
+    def slug(self):
+        return
 
     @property
     def join_url(self):
@@ -61,32 +65,43 @@ class Tournament(models.Model):
     referee_list = models.ManyToManyField(User, related_name='referee_list', blank=True)
 
     @property
+    def has_matches(self):
+        matches = list(Match.objects.filter(tournament=self))
+        return len(matches) > 0
+
+    @property
     def url(self):
-        slug = uuid_to_slug(self.id)
-        return reverse('tournament_details', kwargs={'slug':slug})
+        return reverse('tournament_details', kwargs={'slug':self.slug})
+
+    @property
+    def slug(self):
+        return uuid_to_slug(self.id)
 
     def __str__(self):
         return '%s %s' % (self.start_date, self.name)
 
 
-class Score(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    value = models.FloatField(default=0)
-    is_acceptted = models.BooleanField(default=False)
-
-
 class Match(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     tournament = models.ForeignKey(Tournament, on_delete=models.CASCADE)
-    team_A = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='teamA')
-    team_B = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='teamB')
-    team_A_score = models.ForeignKey(Score, on_delete=models.CASCADE, related_name='teamA_score')
-    team_B_score = models.ForeignKey(Score, on_delete=models.CASCADE, related_name='teamB_score')
-    winner_team = models.ForeignKey(Team, on_delete=models.CASCADE, related_name='winner_team')
+    match_number = models.IntegerField(null=False)
+    team_A = models.ForeignKey(Team, null=True, on_delete=models.CASCADE, related_name='teamA')
+    team_B = models.ForeignKey(Team, null=True, on_delete=models.CASCADE, related_name='teamB')
+    team_A_score = models.IntegerField(default=0)
+    team_B_score = models.IntegerField(default=0)
+    winner_team = models.ForeignKey(Team, null=True, on_delete=models.CASCADE, related_name='winner_team')
     is_end = models.BooleanField(default=False)
 
+    @property
+    def url(self):
+        return reverse('match_details', kwargs={'slug':self.slug})
+
+    @property
+    def slug(self):
+        return uuid_to_slug(self.id)
+        
     def __str__(self):
-        return '%s (%d) vs %s (%d)' % (self.team_A.name, self.team_A_score.value, self.team_B.name, self.team_B_score.value)
+        return '%s | Match %d | %s (%d) vs %s (%d)' % (self.tournament.name, self.match_number, self.team_A, self.team_A_score, self.team_B, self.team_B_score)
 
 
 class JoinRequestStatusType(Enum):

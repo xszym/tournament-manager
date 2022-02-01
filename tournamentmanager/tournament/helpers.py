@@ -15,3 +15,12 @@ def slug_to_uuid(slug: str) -> UUID:
         raise ValueError('slug must be a string')
     slug += '=' * (-len(slug) % 4)
     return UUID(bytes=urlsafe_b64decode(slug))
+
+
+def is_power_of_2(number: int) -> bool:
+    if not isinstance(number, int):
+        if isinstance(number, float):
+            number = int(number)
+        else:
+            raise ValueError('number must be an integer')
+    return number & (number - 1) == 0

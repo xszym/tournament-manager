@@ -1,5 +1,6 @@
-from django.urls import path
+from django.conf.urls import url
 from django.contrib.auth import views as auth_view
+from django.urls import path
 from . import views
 
 
@@ -19,4 +20,9 @@ urlpatterns = [
     path('change-team-request-status/<int:request_id>/<str:new_status>/', views.change_TeamTournamentRequest_status, name='change_TeamTournamentRequest_status'),
     path('team/<slug:slug>/', views.TeamDetailsView.as_view(), name='team_details'),
     path('tournament/<slug:slug>/', views.TournamentDetailsView.as_view(), name='tournament_details'),
+    path('tournament-generate-matches/<slug:slug>/', views.generate_matches, name='generate_matches'),
+    path('tournament-remove-matches/<slug:slug>/', views.remove_all_matches_for_tournament, name='remove_matches'),
+    path('match/<slug:slug>/', views.MatchDetailsView.as_view(), name='match_details'),
+    path('match-accept-score/<slug:slug>/', views.accept_match_score, name='match_accept_score'),
+
 ]
